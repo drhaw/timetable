@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Platform Jadual Beban JKM</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        /* Styling khusus semasa print (cetak) */
+        @media print {
+            select {
+                appearance: none;
+                -webkit-appearance: none;
+                -moz-appearance: none;
+                border: none !important;
+                background: transparent !important;
+                padding: 0 !important;
+                font-weight: 500;
+                color: #374151 !important;
+            }
+            input[type="number"] {
+                border: none !important;
+                background: transparent !important;
+                padding: 0 !important;
+                font-weight: bold;
+                text-align: center;
+                color: #374151 !important;
+            }
+            input[type="number"]::-webkit-inner-spin-button, 
+            input[type="number"]::-webkit-outer-spin-button { 
+                -webkit-appearance: none; 
+                margin: 0; 
+            }
+            .no-print { display: none !important; }
+            body { background-color: white; }
+            .shadow-sm { box-shadow: none !important; }
+            .admin-col { display: none !important; }
+            .tab-content { display: block !important; }
+            table { page-break-inside: auto; }
+            tr { page-break-inside: avoid; page-break-after: auto; }
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <!-- Navbar -->
+    <nav class="bg-blue-800 text-white shadow-lg no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <i class="fas fa-calendar-alt text-2xl mr-3"></i>
+                    <span class="font-bold text-xl tracking-tight">Penyusun Interaktif Jadual Beban JKM</span>
+                </div>
+                <div class="hidden md:block">
+                    <span class="text-sm font-medium bg-blue-700 px-3 py-1 rounded-full shadow-inner">Sesi Sept 2026 - Feb 2027</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Tab Navigation -->
+    <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 no-print">
+        <div class="border-b border-gray-200">
+            <nav class="-mb-px flex space-x-8 overflow-x-auto" aria-label="Tabs">
+                <button onclick="switchTab('tab-agihan')" id="btn-tab-agihan" class="tab-btn border-blue-500 text-blue-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center">
+                    <i class="fas fa-tasks mr-2"></i> Jadual Agihan Tugas
+                </button>
+                <button onclick="switchTab('tab-pensyarah')" id="btn-tab-pensyarah" class="tab-btn border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center">
+                    <i class="fas fa-chalkboard-teacher mr-2"></i> Senarai Pensyarah
+                </button>
+                <button onclick="switchTab('tab-subjek')" id="btn-tab-subjek" class="tab-btn border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center">
+                    <i class="fas fa-book-open mr-2"></i> Senarai Subjek JKM
+                </button>
+                <button onclick="switchTab('tab-cetakan')" id="btn-tab-cetakan" class="tab-btn border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center">
+                    <i class="fas fa-print mr-2"></i> Laporan Cetakan Rasmi
+                </button>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Main Content Container -->
+    <main class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        
+        <div class="hidden print:block text-center mb-6">
+            <h1 class="text-2xl font-bold uppercase">Dokumen Pengurusan Akademik JKM</h1>
+            <p class="text-gray-600">Sesi Pengajian: September 2026 - Februari 2027</p>
+        </div>
+
+        <!-- ==============================
+             TAB 1: JADUAL AGIHAN TUGAS 
+             ============================== -->
+        <div id="tab-agihan" class="tab-content block">
+            
+            <!-- Dashboard Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 no-print">
+                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 flex items-center">
+                    <div class="p-3 rounded-full bg-blue-100 text-blue-600 mr-4">
+                        <i class="fas fa-user-check text-xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-500">Jumlah Staf Aktif</p>
+                        <p class="text-2xl font-bold text-gray-900" id="totalStaff">0</p>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 flex items-center">
+                    <div class="p-3 rounded-full bg-green-100 text-green-600 mr-4">
+                        <i class="fas fa-calculator text-xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-500">Purata Beban Mengajar (Mata)</p>
+                        <p class="text-2xl font-bold text-gray-900" id="avgLoad">0</p>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 flex items-center">
+                    <div class="p-3 rounded-full bg-purple-100 text-purple-600 mr-4">
+                        <i class="fas fa-layer-group text-xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-500">Seksyen Teras (Diisi / Ditawar)</p>
+                        <p class="text-2xl font-bold text-gray-900" id="totalSectionsRatio">0 / 0</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Setting Penawaran Seksyen -->
+            <div class="mb-6 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden no-print">
+                <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex justify-between items-center cursor-pointer hover:bg-gray-100 transition" onclick="toggleSettings()">
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-800"><i class="fas fa-sliders-h text-blue-600 mr-2"></i>Tetapan Penawaran Seksyen Semasa</h3>
+                        <p class="text-xs text-gray-500 mt-1">Ubah nilai di bawah mengikut jumlah seksyen yang ditawarkan pada semester ini.</p>
+                    </div>
+                    <i class="fas fa-chevron-down text-gray-500 transition-transform duration-200" id="settingsIcon"></i>
+                </div>
+                <div id="settingsPanel" class="p-6 hidden">
+                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4" id="settingsGrid">
+                        <!-- Javascript will populate this -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Toolbar (Search & Actions) -->
+            <div class="bg-white p-4 rounded-t-xl shadow-sm border-b border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-4 no-print">
+                <div class="relative w-full sm:w-96 flex items-center gap-2">
+                    <div class="relative w-full">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-search text-gray-400"></i>
+                        </div>
+                        <input type="text" id="searchInput" class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 sm:text-sm transition duration-150 ease-in-out" placeholder="Cari no. staf, nama, sejarah, pilihan, atau status...">
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="toggleAdminMode()" id="adminToggleBtn" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <i class="fas fa-user-shield mr-2 text-gray-500" id="adminToggleIcon"></i> <span id="adminToggleText">Mod Admin (Tutup)</span>
+                    </button>
+                    <button onclick="window.print()" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <i class="fas fa-print mr-2"></i> Cetak / PDF
+                    </button>
+                </div>
+            </div>
+
+            <div id="adminActionsBar" class="hidden bg-gray-50 p-3 border-x border-gray-200 no-print flex justify-end">
+                <button onclick="openStaffModal()" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-green-600 hover:bg-green-700">
+                    <i class="fas fa-plus mr-2"></i> Tambah Staf Baru
+                </button>
+            </div>
+
+            <!-- Table Agihan -->
+            <div class="bg-white shadow-sm rounded-b-xl overflow-hidden overflow-x-auto mb-8">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider w-10">Bil</th>
+                            <th scope="col" class="px-2 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider w-20">No. Staf</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider min-w-[340px]">Nama Staf, Status & Pilihan</th>
+                            <th scope="col" class="px-2 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider w-56">Subjek 1</th>
+                            <th scope="col" class="px-2 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider w-24">Seks. ÷ Org</th>
+                            <th scope="col" class="px-2 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider w-56">Subjek 2</th>
+                            <th scope="col" class="px-2 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider w-24">Seks. ÷ Org</th>
+                            <th scope="col" class="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Jumlah Beban</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Catatan</th>
+                            <th scope="col" id="thActions" class="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider hidden admin-col">Tindakan</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" class="bg-white divide-y divide-gray-200">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+                <div id="emptyState" class="hidden text-center py-12">
+                    <i class="fas fa-folder-open text-gray-300 text-4xl mb-3"></i>
+                    <p class="text-gray-500">Tiada rekod dijumpai.</p>
+                </div>
+            </div>
+
+            <!-- Validation Summary -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <h3 class="text-lg font-bold text-gray-800 mb-4"><i class="fas fa-clipboard-check text-blue-500 mr-2"></i>Status Semakan Kuota Penawaran Semasa</h3>
+                <p class="text-xs text-gray-500 mb-4">Mengesahkan bahawa beban seksyen yang diagihkan di dalam jadual sama dengan jumlah penawaran semester ini.</p>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm" id="validationGrid">
+                    <!-- Validation boxes populated by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ==============================
+             TAB 2: SENARAI PENSYARAH 
+             ============================== -->
+        <div id="tab-pensyarah" class="tab-content hidden">
+            <div class="mb-4 flex justify-between items-center no-print">
+                <h2 class="text-xl font-bold text-gray-800">Senarai Penuh Pensyarah JKM</h2>
+                <button onclick="window.print()" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50">
+                    <i class="fas fa-print mr-2"></i> Cetak Senarai
+                </button>
+            </div>
+            <div class="bg-white shadow-sm rounded-xl overflow-hidden overflow-x-auto border border-gray-200">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-blue-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider w-16">Bil</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider w-32">No. Staf</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Nama Staf / Pensyarah</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Sejarah Pengajaran Teras</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Pilihan Hasil Tinjauan (Survey)</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Status / Catatan</th>
+                        </tr>
+                    </thead>
+                    <tbody id="staffListBody" class="bg-white divide-y divide-gray-200">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ==============================
+             TAB 3: SENARAI SUBJEK JKM 
+             ============================== -->
+        <div id="tab-subjek" class="tab-content hidden">
+            <div class="mb-4 flex justify-between items-center no-print">
+                <h2 class="text-xl font-bold text-gray-800">Senarai Subjek Teras & Penawaran</h2>
+                <button onclick="window.print()" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50">
+                    <i class="fas fa-print mr-2"></i> Cetak Subjek
+                </button>
+            </div>
+            <div class="bg-white shadow-sm rounded-xl overflow-hidden overflow-x-auto border border-gray-200">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-green-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider w-16">Bil</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider w-40">Kod Kursus</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Nama Kursus</th>
+                            <th scope="col" class="px-6 py-3 text-center text-xs font-bold text-gray-600 uppercase tracking-wider w-48">Penawaran Seksyen</th>
+                        </tr>
+                    </thead>
+                    <tbody id="subjectListBody" class="bg-white divide-y divide-gray-200">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ==============================
+             TAB 4: LAPORAN CETAKAN RASMI 
+             ============================== -->
+        <div id="tab-cetakan" class="tab-content hidden">
+            <div class="mb-4 flex justify-between items-center no-print">
+                <h2 class="text-xl font-bold text-gray-800">Laporan Agihan Tugas (Format Cetakan Rasmi)</h2>
+                <button onclick="window.print()" class="inline-flex items-center px-4 py-2 border border-blue-600 shadow-sm text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700">
+                    <i class="fas fa-file-pdf mr-2"></i> Simpan PDF / Cetak
+                </button>
+            </div>
+            <div class="bg-white shadow-sm overflow-hidden overflow-x-auto">
+                <table class="min-w-full border-collapse border border-gray-600">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th scope="col" class="border border-gray-600 px-2 py-3 text-center text-xs font-bold text-gray-800 uppercase w-10">Bil</th>
+                            <th scope="col" class="border border-gray-600 px-2 py-3 text-center text-xs font-bold text-gray-800 uppercase w-28">Kod Kursus</th>
+                            <th scope="col" class="border border-gray-600 px-2 py-3 text-center text-xs font-bold text-gray-800 uppercase min-w-[180px]">Kursus</th>
+                            <th scope="col" class="border border-gray-600 px-2 py-3 text-center text-xs font-bold text-gray-800 uppercase w-20">Panel</th>
+                            <th scope="col" class="border border-gray-600 px-2 py-3 text-center text-xs font-bold text-gray-800 uppercase w-24">Seksyen</th>
+                            <th scope="col" class="border border-gray-600 px-2 py-3 text-center text-xs font-bold text-gray-800 uppercase min-w-[200px]">Pensyarah / Pengajar</th>
+                            <th scope="col" class="border border-gray-600 px-2 py-3 text-center text-xs font-bold text-gray-800 uppercase w-32">Penyelaras</th>
+                            <th scope="col" class="border border-gray-600 px-2 py-3 text-center text-xs font-bold text-gray-800 uppercase w-8">K</th>
+                            <th scope="col" class="border border-gray-600 px-2 py-3 text-center text-xs font-bold text-gray-800 uppercase w-8">T</th>
+                            <th scope="col" class="border border-gray-600 px-2 py-3 text-center text-xs font-bold text-gray-800 uppercase w-8">A</th>
+                            <th scope="col" class="border border-gray-600 px-2 py-3 text-center text-xs font-bold text-gray-800 uppercase w-24">Limit Pelajar</th>
+                        </tr>
+                    </thead>
+                    <tbody id="printListBody" class="bg-white">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Add/Edit Staff Modal (Admin Only) -->
+        <div id="staffModal" class="fixed inset-0 z-50 hidden bg-gray-900 bg-opacity-50 overflow-y-auto flex items-center justify-center no-print">
+            <div class="bg-white rounded-xl shadow-xl w-full max-w-lg mx-4">
+                <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                    <h3 class="text-lg font-bold text-gray-900" id="modalTitle">Tambah Staf Baru</h3>
+                    <button onclick="closeStaffModal()" class="text-gray-400 hover:text-gray-600 focus:outline-none">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                <form id="staffForm" onsubmit="saveStaff(event)">
+                    <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">No. Staf</label>
+                            <input type="text" id="formNoStaf" required class="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Contoh: 1234">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nama Penuh</label>
+                            <input type="text" id="formName" required class="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Nama berserta gelaran">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Status Pengajaran</label>
+                            <select id="formStatus" class="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                <option value="Aktif">Aktif</option>
+                                <option value="Tidak Aktif">Tidak Aktif (Cuti / Sabatikal)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Sejarah Pengajaran (Subjek Pernah Diajar)</label>
+                            <input type="text" id="formHistory" class="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Contoh: Statics, Dynamics">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Hasil Tinjauan / Pilihan Survey</label>
+                            <textarea id="formSurvey" rows="2" class="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Contoh: [T1] Statics, [T2] Dynamics, [Makmal] Lab 1"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Catatan</label>
+                            <input type="text" id="formNote" class="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Contoh: Penyelaras">
+                        </div>
+                    </div>
+                    <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end gap-3 rounded-b-xl">
+                        <button type="button" onclick="closeStaffModal()" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">Batal</button>
+                        <button type="submit" class="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // Admin Mode State
+        let isAdminMode = false;
+        let editingStaffId = null;
+
+        // Senarai 16 Subjek Asas
+        const subjectOptions = [
+            "- Tiada (Berjawatan / Kosong) -",
+            "BDA 10203 - Statics",
+            "BDA 10903 - Solid Mechanics I",
+            "BDA 17301 - Engineering Mechanics Laboratory I (New)",
+            "BDA 20103 - Dynamics",
+            "BDA 20303 - Mechanics of Machine (KOD LAMA)",
+            "BDA 21302 - Solid Mechanics II (KOD LAMA)",
+            "BDA 21302 - Solid Mechanics II (NEW)",
+            "BDA 21402 - Mechanics of Machine (NEW)",
+            "BDA 21202 - Instrumentation",
+            "BDA 31302 - Occupational Safety and Health",
+            "BDA 30703 - Control Engineering",
+            "BDA 34103 - Numerical Methods (KOD LAMA)",
+            "BDA 34202 - Numerical Methods (NEW)",
+            "BDA 37401 - Engineering Mechanics Laboratory II",
+            "BDA 31103 - Vibration",
+            "BDA 37601 - Engineering Mechanics Laboratory III",
+            "BDA 31003 - Finite Element Method",
+            "BDC 40703 - Modelling and Simulation",
+            "BDC 41103 - Solid Modelling",
+            "BDC 41203 - Applied Non Destructive Testing",
+            "BDC 41303 - Project and Risk Management",
+            "BDC 40603 - Robotic",
+            "BDA 14303 - Elektrik dan Elektronik"
+        ];
+
+        // Keperluan Kuota Dinamik 
+        let validationRules = [
+            { code: "BDA 10203", name: "Statics", regex: /BDA 10203/i, req: 1 },
+            { code: "BDA 10903", name: "Solid Mechanics I", regex: /BDA 10903/i, req: 8 },
+            { code: "BDA 17301", name: "Engineering Mechanics Laboratory I (New)", regex: /BDA 17301/i, req: 6 },
+            { code: "BDA 20103", name: "Dynamics", regex: /BDA 20103/i, req: 6 },
+            { code: "BDA 21302", name: "Solid Mechanics II (NEW)", regex: /BDA 21302.*NEW/i, req: 8 },
+            { code: "BDA 21402", name: "Mechanics of Machine (NEW)", regex: /BDA 21402/i, req: 4 },
+            { code: "BDA 21202", name: "Instrumentation", regex: /BDA 21202/i, req: 8 },
+            { code: "BDA 31302", name: "Occupational Safety and Health", regex: /BDA 31302/i, req: 2 },
+            { code: "BDA 30703", name: "Control Engineering", regex: /BDA 30703/i, req: 6 },
+            { code: "BDA 34202", name: "Numerical Methods (NEW)", regex: /BDA 34202/i, req: 4 },
+            { code: "BDA 37401", name: "Engineering Mechanics Laboratory II", regex: /BDA 37401/i, req: 8 },
+            { code: "BDA 31103", name: "Vibration", regex: /BDA 31103/i, req: 8 },
+            { code: "BDA 37601", name: "Engineering Mechanics Laboratory III", regex: /BDA 37601/i, req: 6 },
+            { code: "BDA 31003", name: "Finite Element Method", regex: /BDA 31003/i, req: 6 }
+        ];
+
+        // Data Staf Utama 
+        let staffData = [
+            { id: 1, noStaf: "400", name: "Prof. Madya Dr. Mohammad Sukri bin Mustapa", status: "Aktif", history: "Solid Mechanics I, Solid Mechanics II, Statics", survey: "[T1] Solid Mechanics 1, [T2] Solid Mechanics 2", sub1: "BDA 10903 - Solid Mechanics I", sec1: 2, share1: 1, sub2: "BDA 21302 - Solid Mechanics II (NEW)", sec2: 2, share2: 1, note: "Pilihan Teras 1 & 2" },
+            { id: 2, noStaf: "752", name: "Dr. Hj. Kamarul Azhar bin Kamarudin", status: "Aktif", history: "Solid Mechanics II, Finite Element Method", survey: "[T1] Solid Mechanics 2, [T2] Finite Element Method", sub1: "BDA 21302 - Solid Mechanics II (NEW)", sec1: 2, share1: 1, sub2: "BDA 31003 - Finite Element Method", sec2: 2, share2: 1, note: "Pilihan Teras Utama" },
+            { id: 3, noStaf: "779", name: "Prof. Dr. Shahruddin bin Hj. Mahzan @ Mohd Zin", status: "Aktif", history: "Vibration, Finite Element Method, Solid Mechanics I", survey: "[T1] Vibration, [T2] Finite Element Method", sub1: "BDA 31103 - Vibration", sec1: 2, share1: 1, sub2: "BDA 31003 - Finite Element Method", sec2: 2, share2: 1, note: "Pilihan Teras Utama" },
+            { id: 4, noStaf: "871", name: "Prof. Madya Ts. Dr. Muhd Hafeez bin Zainulabidin", status: "Aktif", history: "Finite Element Method, Vibration, Eng. Mech Lab II", survey: "[T1] Finite Element Method, [T2] Vibration", sub1: "BDA 37401 - Engineering Mechanics Laboratory II", sec1: 4, share1: 1, sub2: "- Tiada (Berjawatan / Kosong) -", sec2: 0, share2: 1, note: "Fokus Makmal 2" },
+            { id: 5, noStaf: "877", name: "Dr. Noormaziah binti Jafferi", status: "Aktif", history: "Numerical Methods, Control Engineering, Finite Element Method", survey: "[T1] Numerical Methods, [T2] Control Engineering", sub1: "BDA 34202 - Numerical Methods (NEW)", sec1: 2, share1: 1, sub2: "- Tiada (Berjawatan / Kosong) -", sec2: 0, share2: 1, note: "Pilihan Teras 1" },
+            { id: 6, noStaf: "884", name: "Prof. Madya Ir. Ts. Dr. Al Emran bin Ismail", status: "Aktif", history: "Solid Mechanics I, Solid Mechanics II", survey: "[T1] Solid Mechanics 1, [T2] Solid Mechanics 2", sub1: "BDA 10903 - Solid Mechanics I", sec1: 2, share1: 1, sub2: "- Tiada (Berjawatan / Kosong) -", sec2: 0, share2: 1, note: "Pilihan Teras 1" },
+            { id: 7, noStaf: "905", name: "Prof. Madya Ir. Ts. Dr. Saifulnizan bin Jamian", status: "Aktif", history: "Finite Element Method, Numerical Methods", survey: "[T1] Finite Element Method, [T2] Numerical Methods", sub1: "BDA 31003 - Finite Element Method", sec1: 2, share1: 1, sub2: "BDA 34202 - Numerical Methods (NEW)", sec2: 2, share2: 1, note: "Pilihan Teras Utama" },
+            { id: 8, noStaf: "926", name: "Dr. Ramhuzaini bin Abd Rahman", status: "Aktif", history: "Control Engineering, Instrumentation, Vibration", survey: "[T1] Control Engineering, [T2] Instrumentation", sub1: "BDA 21202 - Instrumentation", sec1: 4, share1: 1, sub2: "- Tiada (Berjawatan / Kosong) -", sec2: 0, share2: 1, note: "Penyelaras" },
+            { id: 9, noStaf: "951", name: "Dr. Mohd Norihan bin Ibrahim @ Tamrin", status: "Aktif", history: "Dynamics, Statics, Instrumentation", survey: "[T1] Dynamics, [T2] Statics", sub1: "BDA 20103 - Dynamics", sec1: 2, share1: 1, sub2: "- Tiada (Berjawatan / Kosong) -", sec2: 0, share2: 1, note: "Pilihan Teras 1" },
+            { id: 10, noStaf: "963", name: "En. Rosli bin Asmawi", status: "Aktif", history: "Mechanics of Machine, Solid Mechanics I, Dynamics", survey: "[T1] Mechanics of Machine, [T2] Solid Mechanics 1", sub1: "BDA 21402 - Mechanics of Machine (NEW)", sec1: 2, share1: 1, sub2: "BDA 17301 - Engineering Mechanics Laboratory I (New)", sec2: 3, share2: 1, note: "Teras & Makmal 1" },
+            { id: 11, noStaf: "989", name: "Prof. Madya Ts. Dr. Zamri bin Noranai", status: "Aktif", history: "Mechanics of Machine, Occupational Safety, Vibration", survey: "[T1] Mechanics of Machine, [T2] Occupational Safety", sub1: "BDA 31103 - Vibration", sec1: 2, share1: 2, sub2: "BDA 34202 - Numerical Methods (NEW)", sec2: 2, share2: 2, note: "Kongsi dgn Eliza (Mg 1-7)" },
+            { id: 12, noStaf: "1096", name: "Prof. Madya Dr. Zamani bin Ngali", status: "Aktif", history: "Control Engineering, Instrumentation", survey: "[T1] Control Engineering, [T2] Instrumentation", sub1: "BDA 30703 - Control Engineering", sec1: 2, share1: 1, sub2: "BDA 21202 - Instrumentation", sec2: 2, share2: 1, note: "Pilihan Teras Utama" },
+            { id: 13, noStaf: "1098", name: "Prof. Madya Dr. Izzuddin bin Zaman @ Bujang", status: "Aktif", history: "Vibration, Dynamics, Control Engineering", survey: "[T1] Vibration, [T2] Dynamics", sub1: "BDA 30703 - Control Engineering", sec1: 2, share1: 1, sub2: "- Tiada (Berjawatan / Kosong) -", sec2: 0, share2: 1, note: "Sedia Terima (Control)" },
+            { id: 14, noStaf: "1176", name: "Dr. Ts. Hanani binti Abd Wahab", status: "Aktif", history: "Control Engineering, Instrumentation", survey: "[T1] Control Engineering, [T2] Instrumentation", sub1: "BDA 21202 - Instrumentation", sec1: 2, share1: 1, sub2: "- Tiada (Berjawatan / Kosong) -", sec2: 0, share2: 1, note: "Pilihan Teras 2" },
+            { id: 15, noStaf: "1180", name: "Prof. Madya Ts. Dr. Mohd Halim Irwan bin Ibrahim", status: "Aktif", history: "Solid Mechanics II, Statics", survey: "[T1] Solid Mechanics 2, [T2] Statics", sub1: "BDA 21302 - Solid Mechanics II (NEW)", sec1: 2, share1: 1, sub2: "- Tiada (Berjawatan / Kosong) -", sec2: 0, share2: 1, note: "Pilihan Teras 1" },
+            { id: 16, noStaf: "1227", name: "Ir. Dr. Sri Yulis binti M. Amin", status: "Tidak Aktif", history: "Finite Element Method, Numerical Methods, Eng. Mech Lab I", survey: "[T1] Finite Element Method, [T2] Numerical Methods", sub1: "- Tiada (Berjawatan / Kosong) -", sec1: 0, share1: 1, sub2: "- Tiada (Berjawatan / Kosong) -", sec2: 0, share2: 1, note: "Cuti 2 Tahun" },
+            { id: 17, noStaf: "1283", name: "Dr. Fazimah binti Mat Noor", status: "Aktif", history: "Statics, Solid Mechanics I", survey: "[T1] Statics, [T2] Solid Mechanics 1", sub1: "BDA 10903 - Solid Mechanics I", sec1: 2, share1: 1, sub2: "BDA 17301 - Engineering Mechanics Laboratory I (New)", sec2: 3, share2: 1, note: "Teras & Makmal 1" },
+            { id: 18, noStaf: "1285", name: "Dr. Zaleha binti Mohamad", status: "Aktif", history: "Solid Mechanics I, Statics, Solid Mechanics II", survey: "[T1] Solid Mechanics 1, [T2] Statics", sub1: "BDA 10903 - Solid Mechanics I", sec1: 2, share1: 1, sub2: "- Tiada (Berjawatan / Kosong) -", sec2: 0, share2: 1, note: "Pilihan Teras 1" },
+            { id: 19, noStaf: "1532", name: "Prof. Madya Dr. Mohd Khir bin Mohd Nor", status: "Aktif", history: "Statics, Solid Mechanics II", survey: "[T1] Statics, [T2] Solid Mechanics 2", sub1: "BDA 10903 - Solid Mechanics I", sec1: 2, share1: 1, sub2: "- Tiada (Berjawatan / Kosong) -", sec2: 0, share2: 1, note: "Pilihan Pengkhususan Solid" },
+            { id: 20, noStaf: "1993", name: "Ir. Dr. Eliza binti M. Yusup", status: "Aktif", history: "Solid Mechanics I, Statics, Eng. Mech Lab I", survey: "[T1] Solid Mechanics 1, [T2] Statics", sub1: "BDA 31103 - Vibration", sec1: 2, share1: 2, sub2: "BDA 34202 - Numerical Methods (NEW)", sec2: 2, share2: 2, note: "Kongsi dgn Zamri (Mg 8-14)" },
+            { id: 21, noStaf: "1997", name: "Dr. Noradila binti Abdul Latif", status: "Aktif", history: "Dynamics, Mechanics of Machine", survey: "[T1] Dynamics, [T2] Mechanics of Machine", sub1: "BDA 20103 - Dynamics", sec1: 2, share1: 1, sub2: "- Tiada (Berjawatan / Kosong) -", sec2: 0, share2: 1, note: "Pilihan Teras 1" },
+            { id: 22, noStaf: "2123", name: "Dr. Mohd Azhar bin Harimon", status: "Aktif", history: "Dynamics, Statics", survey: "[T1] Dynamics, [T2] Statics", sub1: "BDA 20103 - Dynamics", sec1: 2, share1: 1, sub2: "BDA 37401 - Engineering Mechanics Laboratory II", sec2: 2, share2: 1, note: "Teras & Makmal 2" },
+            { id: 23, noStaf: "2124", name: "Ir. Ts. Maznan bin Ismon", status: "Aktif", history: "Mechanics of Machine, Dynamics", survey: "[T1] Mechanics of Machine, [T2] Dynamics", sub1: "BDA 21402 - Mechanics of Machine (NEW)", sec1: 2, share1: 1, sub2: "BDA 21302 - Solid Mechanics II (NEW)", sec2: 2, share2: 1, note: "Pilihan Teras Utama" },
+            { id: 24, noStaf: "2128", name: "Ts. Dr. Nor Azali bin Azmir", status: "Aktif", history: "Occupational Safety, Vibration", survey: "[T1] Occupational Safety and Health, [T2] Vibration", sub1: "BDA 31302 - Occupational Safety and Health", sec1: 2, share1: 1, sub2: "BDA 31103 - Vibration", sec2: 2, share2: 1, note: "Pilihan Teras 1 & 2" },
+            { id: 25, noStaf: "2149", name: "Ts. Dr. Muhammad Faisal bin Mahmod", status: "Aktif", history: "Dynamics, Numerical Methods", survey: "[T1] Dynamics, [T2] Numerical Methods", sub1: "BDA 20303 - Mechanics of Machine (KOD LAMA)", sec1: 1, share1: 1, sub2: "BDA 37401 - Engineering Mechanics Laboratory II", sec2: 2, share2: 1, note: "Teras & Makmal 2" },
+            { id: 26, noStaf: "2482", name: "Dr. Shahmir Hayyan bin Sanusi", status: "Aktif", history: "Numerical Methods, Vibration", survey: "[T1] Numerical Methods, [T2] Vibration", sub1: "BDA 31103 - Vibration", sec1: 2, share1: 1, sub2: "- Tiada (Berjawatan / Kosong) -", sec2: 0, share2: 1, note: "Pilihan Teras 2" },
+            { id: 27, noStaf: "2285", name: "Dr. S Kanna A/L Subramaniyan", status: "Aktif", history: "Finite Element Method, Solid Mechanics I", survey: "[T1] Finite Element Method, [T2] Solid Mechanics 1", sub1: "BDA 37601 - Engineering Mechanics Laboratory III", sec1: 6, share1: 1, sub2: "- Tiada (Berjawatan / Kosong) -", sec2: 0, share2: 1, note: "Fokus Penuh Makmal 3" },
+            { id: 28, noStaf: "2522", name: "Prof. Madya Dr. Ong Pauline", status: "Aktif", history: "Numerical Methods", survey: "[T1] Numerical Methods", sub1: "BDA 34202 - Numerical Methods (NEW)", sec1: 1, share1: 1, sub2: "- Tiada (Berjawatan / Kosong) -", sec2: 0, share2: 1, note: "Pilihan Teras 1" },
+            { id: 29, noStaf: "2743", name: "Prof. Madya Ir. Dr. Low Cheng Yee", status: "Aktif", history: "Control Engineering, Numerical Methods", survey: "[T1] Control Engineering, [T2] Numerical Methods", sub1: "BDA 30703 - Control Engineering", sec1: 2, share1: 1, sub2: "- Tiada (Berjawatan / Kosong) -", sec2: 0, share2: 1, note: "Pilihan Teras 1" },
+            { id: 30, noStaf: "-", name: "Dr. Safyanu Bashir Danjuma", status: "Aktif", history: "Dynamics, Control Engineering, Statics", survey: "Tiada rekod tinjauan", sub1: "- Tiada (Berjawatan / Kosong) -", sec1: 0, share1: 1, sub2: "- Tiada (Berjawatan / Kosong) -", sec2: 0, share2: 1, note: "Sila agihkan beban Teras/Makmal" }
+        ];
+
+        // ------------------ TAB NAVIGATION ------------------
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => {
+                el.classList.add('hidden');
+                el.classList.remove('block');
+            });
+            
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('border-blue-500', 'text-blue-600');
+                el.classList.add('border-transparent', 'text-gray-500');
+            });
+
+            const activeTab = document.getElementById(tabId);
+            if(activeTab) {
+                activeTab.classList.remove('hidden');
+                activeTab.classList.add('block');
+            }
+
+            const activeBtn = document.getElementById('btn-' + tabId);
+            if(activeBtn) {
+                activeBtn.classList.remove('border-transparent', 'text-gray-500');
+                activeBtn.classList.add('border-blue-500', 'text-blue-600');
+            }
+
+            if(tabId === 'tab-pensyarah') renderStaffListTab();
+            if(tabId === 'tab-subjek') renderSubjectListTab();
+            if(tabId === 'tab-cetakan') renderPrintView();
+        }
+
+        // ------------------ TAB 2: SENARAI PENSYARAH ------------------
+        function renderStaffListTab() {
+            const tbody = document.getElementById('staffListBody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            
+            staffData.forEach((staff, index) => {
+                const noteDisplay = staff.note || "-";
+                const statusBadge = staff.status === 'Tidak Aktif' 
+                    ? `<span class="ml-2 px-2 inline-flex text-xs leading-4 font-semibold rounded-full bg-red-100 text-red-800">Tidak Aktif</span>`
+                    : `<span class="ml-2 px-2 inline-flex text-xs leading-4 font-semibold rounded-full bg-green-100 text-green-800">Aktif</span>`;
+                
+                const row = `
+                    <tr class="hover:bg-blue-50 transition-colors">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${index + 1}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-700">${staff.noStaf}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${staff.name} ${statusBadge}</td>
+                        <td class="px-6 py-4 text-sm text-gray-600 max-w-sm truncate" title="${staff.history}">${staff.history}</td>
+                        <td class="px-6 py-4 text-sm text-green-700 max-w-md" title="${staff.survey}">${staff.survey}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 italic">${noteDisplay}</td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        // ------------------ TAB 3: SENARAI SUBJEK ------------------
+        function renderSubjectListTab() {
+            const tbody = document.getElementById('subjectListBody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            
+            validationRules.forEach((subject, index) => {
+                const row = `
+                    <tr class="hover:bg-green-50 transition-colors">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${index + 1}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-700">${subject.code}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${subject.name}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-bold text-blue-600 bg-blue-50 rounded-md">
+                            ${subject.req}
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        // ------------------ TAB 4: LAPORAN CETAKAN RASMI ------------------
+        function renderPrintView() {
+            const tbody = document.getElementById('printListBody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+
+            let printHtml = '';
+            
+            validationRules.forEach((sub, index) => {
+                let assignedStaff = [];
+                staffData.forEach(staff => {
+                    if (staff.status === 'Aktif') {
+                        if (sub.regex.test(staff.sub1) && staff.sec1 > 0) {
+                            assignedStaff.push({ name: staff.name, sec: staff.sec1 });
+                        }
+                        if (sub.regex.test(staff.sub2) && staff.sec2 > 0) {
+                            assignedStaff.push({ name: staff.name, sec: staff.sec2 });
+                        }
+                    }
+                });
+
+                let k=2, t=0, a=0, limit=40;
+                const codeStr = sub.code || "";
+                const lastDigit = codeStr.trim().slice(-1);
+                if (lastDigit === '3') { k=2; t=2; limit=40; }
+                else if (lastDigit === '2') { k=2; t=0; limit=40; }
+                else if (lastDigit === '1') { k=0; t=0; a=2; limit=30; } 
+                
+                if (assignedStaff.length === 0) {
+                    assignedStaff.push({ name: "BELUM DIAGIH", sec: 0 });
+                }
+
+                let currentSecOffset = 1;
+                let processedStaff = assignedStaff.map(as => {
+                    let secStr = "-";
+                    if (as.sec > 0) {
+                        if (as.sec === 1) {
+                            secStr = `${currentSecOffset}`;
+                        } else {
+                            secStr = `${currentSecOffset} - ${currentSecOffset + as.sec - 1}`;
+                        }
+                        currentSecOffset += as.sec;
+                    }
+                    return { ...as, secStr };
+                });
+
+                let penyelaras = "-";
+                if (processedStaff[0].name !== "BELUM DIAGIH") {
+                     penyelaras = processedStaff[0].name;
+                }
+
+                let rowCount = processedStaff.length;
+
+                printHtml += `
+                    <tr>
+                        <td rowspan="${rowCount}" class="border border-gray-400 px-2 py-2 text-center align-top text-sm font-medium">${index + 1}</td>
+                        <td rowspan="${rowCount}" class="border border-gray-400 px-2 py-2 font-bold text-center align-top whitespace-nowrap text-sm">${sub.code}</td>
+                        <td rowspan="${rowCount}" class="border border-gray-400 px-2 py-2 align-top text-sm font-bold text-gray-900">${sub.name}</td>
+                        <td rowspan="${rowCount}" class="border border-gray-400 px-2 py-2 text-center align-top text-sm font-semibold">JKM (S)</td>
+                        <td class="border border-gray-400 px-2 py-2 text-center font-bold text-sm bg-gray-50">${processedStaff[0].secStr}</td>
+                        <td class="border border-gray-400 px-2 py-2 text-sm font-bold text-gray-800">${processedStaff[0].name}</td>
+                        <td rowspan="${rowCount}" class="border border-gray-400 px-2 py-2 text-xs align-top italic text-gray-600">${penyelaras}</td>
+                        <td rowspan="${rowCount}" class="border border-gray-400 px-2 py-2 text-center align-top text-sm font-medium">${k}</td>
+                        <td rowspan="${rowCount}" class="border border-gray-400 px-2 py-2 text-center align-top text-sm font-medium">${t}</td>
+                        <td rowspan="${rowCount}" class="border border-gray-400 px-2 py-2 text-center align-top text-sm font-medium">${a}</td>
+                        <td rowspan="${rowCount}" class="border border-gray-400 px-2 py-2 text-center align-top text-sm font-bold text-blue-800">${limit}</td>
+                    </tr>
+                `;
+
+                for(let i=1; i<rowCount; i++) {
+                    printHtml += `
+                        <tr>
+                            <td class="border border-gray-400 px-2 py-2 text-center font-bold text-sm bg-gray-50">${processedStaff[i].secStr}</td>
+                            <td class="border border-gray-400 px-2 py-2 text-sm font-bold text-gray-800">${processedStaff[i].name}</td>
+                        </tr>
+                    `;
+                }
+            });
+
+            tbody.innerHTML = printHtml;
+        }
+
+        // ------------------ CALCULATION & MAIN TAB ------------------
+        function getBadgeClass(totalLoad) {
+            if (totalLoad >= 30) return 'bg-red-100 text-red-800 border-red-200'; 
+            if (totalLoad >= 20) return 'bg-orange-100 text-orange-800 border-orange-200'; 
+            if (totalLoad >= 10) return 'bg-blue-100 text-blue-800 border-blue-200'; 
+            if (totalLoad === 0) return 'bg-gray-100 text-gray-800 border-gray-200'; 
+            return 'bg-green-100 text-green-800 border-green-200'; 
+        }
+
+        function getLoadMultiplier(subjectName) {
+            if (!subjectName || subjectName.includes("Tiada")) return 0;
+            const match = subjectName.match(/[A-Z]{3}\s*\d{4}(\d)/);
+            if (match) {
+                const lastDigit = parseInt(match[1]);
+                if (lastDigit === 3) return 10;
+                if (lastDigit === 2) return 6;
+                if (lastDigit === 1) return 2;
+            }
+            return 0;
+        }
+
+        function calculateLoad(subject, sections, shareCount) {
+            const multiplier = getLoadMultiplier(subject);
+            const validShare = Math.max(1, shareCount || 1); 
+            return (multiplier * sections) / validShare;
+        }
+
+        function generateDropdown(selectedValue, index, fieldName) {
+            let optionsHtml = subjectOptions.map(opt => {
+                const isSelected = (opt === selectedValue || (opt.includes("Tiada") && selectedValue === "-")) ? 'selected' : '';
+                return `<option value="${opt}" ${isSelected}>${opt}</option>`;
+            }).join('');
+            
+            return `<select onchange="handleDataChange(${index}, '${fieldName}', this.value)" class="block w-full py-1.5 px-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-xs">
+                ${optionsHtml}
+            </select>`;
+        }
+
+        function generateSectionShareInput(secValue, shareValue, index, secField, shareField) {
+            return `
+            <div class="flex items-center space-x-1 justify-center">
+                <input type="number" min="0" max="20" value="${secValue}" id="${secField}-${index}" onchange="handleDataChange(${index}, '${secField}', this.value)" title="Bilangan Seksyen" class="w-10 text-center border border-gray-300 rounded-md py-1 focus:ring-blue-500 focus:border-blue-500 text-sm font-semibold">
+                <span class="text-xs text-gray-400">÷</span>
+                <input type="number" min="1" max="5" value="${shareValue}" id="${shareField}-${index}" onchange="handleDataChange(${index}, '${shareField}', this.value)" title="Bahagi Bilangan Pensyarah" class="w-10 text-center border border-gray-300 rounded-md py-1 bg-gray-50 focus:bg-white focus:ring-blue-500 focus:border-blue-500 text-sm">
+            </div>
+            `;
+        }
+
+        function handleDataChange(index, field, value) {
+            if (field.startsWith('sec') || field.startsWith('share')) {
+                staffData[index][field] = parseInt(value) || (field.startsWith('share') ? 1 : 0);
+            } else {
+                staffData[index][field] = value;
+                if (value.includes("Tiada (Berjawatan")) {
+                    if (field === 'sub1') { 
+                        staffData[index].sec1 = 0; 
+                        document.getElementById(`sec1-${index}`).value = 0;
+                    }
+                    if (field === 'sub2') { 
+                        staffData[index].sec2 = 0;
+                        document.getElementById(`sec2-${index}`).value = 0;
+                    }
+                }
+            }
+            
+            const load1 = calculateLoad(staffData[index].sub1, staffData[index].sec1, staffData[index].share1);
+            const load2 = calculateLoad(staffData[index].sub2, staffData[index].sec2, staffData[index].share2);
+            const totalLoad = Number((load1 + load2).toFixed(1)); 
+
+            const badgeElement = document.getElementById(`badge-${index}`);
+            if(badgeElement) {
+                badgeElement.textContent = totalLoad;
+                badgeElement.className = `px-3 py-1 inline-flex text-sm leading-5 font-bold rounded-full border ${getBadgeClass(totalLoad)}`;
+            }
+
+            updateStats();
+            updateValidations();
+            
+            // Re-render Print tab if active
+            if(!document.getElementById('tab-cetakan').classList.contains('hidden')) {
+                renderPrintView();
+            }
+        }
+
+        function toggleSettings() {
+            const panel = document.getElementById('settingsPanel');
+            const icon = document.getElementById('settingsIcon');
+            panel.classList.toggle('hidden');
+            if (panel.classList.contains('hidden')) {
+                icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
+            } else {
+                icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
+            }
+        }
+
+        function renderSettings() {
+            const grid = document.getElementById('settingsGrid');
+            grid.innerHTML = '';
+            validationRules.forEach((rule, index) => {
+                grid.innerHTML += `
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                        <span class="font-semibold text-xs text-gray-700 w-3/4 truncate pr-2" title="${rule.name}">${rule.name}</span>
+                        <input type="number" min="0" value="${rule.req}" onchange="updateRuleRequirement(${index}, this.value)" class="w-14 text-center border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500 text-sm font-bold">
+                    </div>
+                `;
+            });
+        }
+
+        function updateRuleRequirement(index, val) {
+            validationRules[index].req = parseInt(val) || 0;
+            updateStats();
+            updateValidations();
+        }
+
+        function renderTable(dataToRender = staffData) {
+            const tableBody = document.getElementById('tableBody');
+            const emptyState = document.getElementById('emptyState');
+            const thActions = document.getElementById('thActions');
+            
+            tableBody.innerHTML = '';
+
+            if(isAdminMode) {
+                thActions.classList.remove('hidden');
+            } else {
+                thActions.classList.add('hidden');
+            }
+            
+            if (dataToRender.length === 0) {
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+                
+                dataToRender.forEach((staff, idx) => {
+                    const index = staffData.findIndex(s => s.id === staff.id); 
+                    
+                    const load1 = calculateLoad(staff.sub1, staff.sec1, staff.share1);
+                    const load2 = calculateLoad(staff.sub2, staff.sec2, staff.share2);
+                    const totalLoad = Number((load1 + load2).toFixed(1));
+                    const badgeClass = getBadgeClass(totalLoad);
+
+                    let rowClass = "hover:bg-blue-50 transition-colors duration-150";
+                    if (totalLoad === 0 || staff.status === "Tidak Aktif") {
+                        rowClass = "bg-gray-50 opacity-60"; 
+                    } else if (staff.share1 > 1 || staff.share2 > 1) {
+                        rowClass = "bg-yellow-50 hover:bg-yellow-100 transition-colors duration-150";
+                    }
+
+                    const statusBadge = staff.status === 'Tidak Aktif' 
+                        ? `<span class="ml-2 px-2 inline-flex text-xs leading-4 font-semibold rounded-full bg-red-100 text-red-800">Tidak Aktif</span>`
+                        : `<span class="ml-2 px-2 inline-flex text-xs leading-4 font-semibold rounded-full bg-green-100 text-green-800">Aktif</span>`;
+
+                    let actionColumn = "";
+                    if(isAdminMode) {
+                        actionColumn = `
+                        <td class="px-4 py-4 whitespace-nowrap text-center admin-col">
+                            <button onclick="openStaffModal(${staff.id})" class="text-blue-600 hover:text-blue-900 mx-1" title="Edit Staf"><i class="fas fa-edit"></i></button>
+                            <button onclick="deleteStaff(${staff.id})" class="text-red-600 hover:text-red-900 mx-1" title="Padam Staf"><i class="fas fa-trash"></i></button>
+                        </td>`;
+                    }
+
+                    const row = `
+                        <tr class="${rowClass}">
+                            <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500 font-semibold">${idx + 1}</td>
+                            <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-700 font-medium">${staff.noStaf}</td>
+                            <td class="px-4 py-4 whitespace-normal min-w-[340px]">
+                                <div class="text-sm font-bold text-gray-900">${staff.name} ${statusBadge}</div>
+                                <div class="mt-1 flex flex-col space-y-1 text-xs text-gray-500">
+                                    <div class="flex items-start"><i class="fas fa-history text-blue-400 mt-0.5 mr-1.5 w-3 text-center"></i><span><span class="font-semibold text-blue-600">Pernah Ajar:</span> ${staff.history}</span></div>
+                                    <div class="flex items-start"><i class="fas fa-clipboard-list text-green-500 mt-0.5 mr-1.5 w-3 text-center"></i><span><span class="font-semibold text-green-600">Pilihan Survey:</span> ${staff.survey}</span></div>
+                                </div>
+                            </td>
+                            <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-700">
+                                ${generateDropdown(staff.sub1, index, 'sub1')}
+                            </td>
+                            <td class="px-2 py-4 whitespace-nowrap text-center">
+                                ${generateSectionShareInput(staff.sec1, staff.share1, index, 'sec1', 'share1')}
+                            </td>
+                            <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-700">
+                                ${generateDropdown(staff.sub2, index, 'sub2')}
+                            </td>
+                            <td class="px-2 py-4 whitespace-nowrap text-center">
+                                ${generateSectionShareInput(staff.sec2, staff.share2, index, 'sec2', 'share2')}
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap text-center">
+                                <span id="badge-${index}" class="px-3 py-1 inline-flex text-sm leading-5 font-bold rounded-full border ${badgeClass}">
+                                    ${totalLoad}
+                                </span>
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap text-xs text-gray-500 italic">
+                                ${staff.note}
+                            </td>
+                            ${actionColumn}
+                        </tr>
+                    `;
+                    tableBody.innerHTML += row;
+                });
+            }
+        }
+
+        function updateStats() {
+            const activeStaffCount = staffData.filter(s => s.status === 'Aktif').length;
+            
+            let totalAssignedSections = 0;
+            let totalLoadPoints = 0;
+            
+            staffData.forEach(staff => {
+                if (staff.sub1 !== "- Tiada (Berjawatan / Kosong) -") totalAssignedSections += (staff.sec1 / Math.max(1, staff.share1));
+                if (staff.sub2 !== "- Tiada (Berjawatan / Kosong) -") totalAssignedSections += (staff.sec2 / Math.max(1, staff.share2));
+                
+                const load1 = calculateLoad(staff.sub1, staff.sec1, staff.share1);
+                const load2 = calculateLoad(staff.sub2, staff.sec2, staff.share2);
+                totalLoadPoints += (load1 + load2);
+            });
+
+            let totalOfferedSections = 0;
+            validationRules.forEach(rule => { totalOfferedSections += rule.req; });
+
+            const teachingStaffCount = staffData.filter(s => (s.sec1 + s.sec2) > 0).length;
+            const avg = teachingStaffCount > 0 ? (totalLoadPoints / teachingStaffCount).toFixed(1) : 0;
+
+            const tsElements = document.querySelectorAll('#totalStaff');
+            tsElements.forEach(el => el.innerText = activeStaffCount);
+            
+            const trElements = document.querySelectorAll('#totalSectionsRatio');
+            trElements.forEach(el => el.innerText = `${Math.round(totalAssignedSections * 10) / 10} / ${totalOfferedSections}`);
+
+            const alElements = document.querySelectorAll('#avgLoad');
+            alElements.forEach(el => el.innerText = avg);
+        }
+
+        function updateValidations() {
+            const grid = document.getElementById('validationGrid');
+            grid.innerHTML = ''; 
+
+            validationRules.forEach(rule => {
+                let currentCount = 0;
+                staffData.forEach(staff => {
+                    if (rule.regex.test(staff.sub1)) currentCount += staff.sec1 / staff.share1;
+                    if (rule.regex.test(staff.sub2)) currentCount += staff.sec2 / staff.share2;
+                });
+
+                currentCount = Math.round(currentCount * 10) / 10;
+
+                const isMatch = currentCount === rule.req;
+                const bgClass = isMatch ? "bg-green-50 border-green-200 border" : "bg-red-50 border-red-200 border";
+                const textClass = isMatch ? "text-green-700" : "text-red-600 font-bold";
+                const iconClass = isMatch ? "fa-check text-green-500" : "fa-exclamation-triangle text-red-500";
+                
+                let extraText = "";
+                if (!isMatch) {
+                    const diff = currentCount - rule.req;
+                    extraText = diff > 0 ? `<br><span class="text-xs text-red-500">Terlebih ${diff} seksyen</span>` : `<br><span class="text-xs text-red-500">Kurang ${Math.abs(diff)} seksyen</span>`;
+                }
+
+                grid.innerHTML += `
+                    <div class="p-3 ${bgClass} rounded-lg flex flex-col justify-center transition-colors">
+                        <div class="flex justify-between items-center w-full">
+                            <span class="font-bold text-gray-700">${rule.name}:</span>
+                            <span class="${textClass} text-base flex items-center gap-2">
+                                ${currentCount}/${rule.req} 
+                                <i class="fas ${iconClass}"></i>
+                            </span>
+                        </div>
+                        ${extraText}
+                    </div>
+                `;
+            });
+        }
+
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const filteredData = staffData.filter(staff => {
+                return staff.name.toLowerCase().includes(searchTerm) || 
+                       staff.sub1.toLowerCase().includes(searchTerm) || 
+                       staff.sub2.toLowerCase().includes(searchTerm) ||
+                       staff.note.toLowerCase().includes(searchTerm) ||
+                       staff.history.toLowerCase().includes(searchTerm) ||
+                       staff.survey.toLowerCase().includes(searchTerm) ||
+                       staff.noStaf.includes(searchTerm) ||
+                       (staff.status || "").toLowerCase().includes(searchTerm);
+            });
+            renderTable(filteredData);
+        });
+
+        // ------------------ ADMIN FUNCTIONS ------------------
+        function toggleAdminMode() {
+            isAdminMode = !isAdminMode;
+            
+            const toggleIcon = document.getElementById('adminToggleIcon');
+            const toggleText = document.getElementById('adminToggleText');
+            const actionsBar = document.getElementById('adminActionsBar');
+
+            if (isAdminMode) {
+                toggleIcon.classList.replace('text-gray-500', 'text-green-500');
+                toggleText.innerText = 'Mod Admin (Buka)';
+                actionsBar.classList.remove('hidden');
+            } else {
+                toggleIcon.classList.replace('text-green-500', 'text-gray-500');
+                toggleText.innerText = 'Mod Admin (Tutup)';
+                actionsBar.classList.add('hidden');
+            }
+            renderTable();
+        }
+
+        function openStaffModal(id = null) {
+            editingStaffId = id;
+            document.getElementById('modalTitle').innerText = id ? "Edit Maklumat Staf" : "Tambah Staf Baru";
+            
+            if (id) {
+                const staff = staffData.find(s => s.id === id);
+                document.getElementById('formNoStaf').value = staff.noStaf;
+                document.getElementById('formName').value = staff.name;
+                document.getElementById('formStatus').value = staff.status || "Aktif";
+                document.getElementById('formHistory').value = staff.history;
+                document.getElementById('formSurvey').value = staff.survey;
+                document.getElementById('formNote').value = staff.note;
+            } else {
+                document.getElementById('staffForm').reset();
+                document.getElementById('formStatus').value = "Aktif";
+            }
+            
+            document.getElementById('staffModal').classList.remove('hidden');
+        }
+
+        function closeStaffModal() {
+            document.getElementById('staffModal').classList.add('hidden');
+            editingStaffId = null;
+        }
+
+        function saveStaff(e) {
+            e.preventDefault();
+            
+            const noStaf = document.getElementById('formNoStaf').value;
+            const name = document.getElementById('formName').value;
+            const status = document.getElementById('formStatus').value;
+            const history = document.getElementById('formHistory').value;
+            const survey = document.getElementById('formSurvey').value;
+            const note = document.getElementById('formNote').value;
+
+            if (editingStaffId) {
+                const index = staffData.findIndex(s => s.id === editingStaffId);
+                staffData[index].noStaf = noStaf;
+                staffData[index].name = name;
+                staffData[index].status = status;
+                staffData[index].history = history;
+                staffData[index].survey = survey;
+                staffData[index].note = note;
+            } else {
+                const newId = staffData.length > 0 ? Math.max(...staffData.map(s => s.id)) + 1 : 1;
+                staffData.push({
+                    id: newId,
+                    noStaf: noStaf,
+                    name: name,
+                    status: status,
+                    history: history,
+                    survey: survey,
+                    sub1: "- Tiada (Berjawatan / Kosong) -",
+                    sec1: 0,
+                    share1: 1,
+                    sub2: "- Tiada (Berjawatan / Kosong) -",
+                    sec2: 0,
+                    share2: 1,
+                    note: note
+                });
+            }
+            
+            closeStaffModal();
+            renderTable();
+            updateStats();
+            updateValidations();
+            
+            if(!document.getElementById('tab-pensyarah').classList.contains('hidden')) {
+                renderStaffListTab();
+            }
+        }
+
+        function deleteStaff(id) {
+            if (confirm("Adakah anda pasti mahu memadam staf ini dari jadual?")) {
+                staffData = staffData.filter(s => s.id !== id);
+                renderTable();
+                updateStats();
+                updateValidations();
+                
+                if(!document.getElementById('tab-pensyarah').classList.contains('hidden')) {
+                    renderStaffListTab();
+                }
+                if(!document.getElementById('tab-cetakan').classList.contains('hidden')) {
+                    renderPrintView();
+                }
+            }
+        }
+
+        // Initialize Call
+        renderSettings();
+        renderTable();
+        updateStats();
+        updateValidations();
+        
+        renderStaffListTab();
+        renderSubjectListTab();
+        renderPrintView();
+    </script>
+</body>
+</html>
