@@ -3,24 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Platform Jadual Beban JKM</title>
+    <title>Platform Jadual Beban JKM / JKM Workload Platform</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6;
-        }
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
         @media print {
             select, input[type="number"], input[type="text"] {
-                appearance: none;
-                -webkit-appearance: none;
-                border: none !important;
-                background: transparent !important;
-                padding: 0 !important;
-                font-weight: 500;
-                color: #374151 !important;
-                text-align: center;
+                appearance: none; -webkit-appearance: none; border: none !important;
+                background: transparent !important; padding: 0 !important; font-weight: 500;
+                color: #374151 !important; text-align: center;
             }
             .no-print { display: none !important; }
             body { background-color: white; }
@@ -39,20 +31,30 @@
             <div class="flex items-center justify-between h-16">
                 <div class="flex items-center">
                     <i class="fas fa-calendar-alt text-2xl mr-3"></i>
-                    <span class="font-bold text-xl tracking-tight">Penyusun Interaktif Jadual Beban JKM</span>
+                    <span class="font-bold text-xl tracking-tight" data-i18n="nav_title">Penyusun Interaktif Jadual Beban JKM</span>
                 </div>
                 <div class="hidden md:flex items-center gap-2">
                     <input type="file" id="importFile" class="hidden" accept=".json" onchange="importData(event)">
-                    <button onclick="document.getElementById('importFile').click()" class="text-xs bg-green-600 hover:bg-green-700 px-3 py-1.5 rounded-md shadow-sm text-white font-medium transition-colors border border-green-500" title="Muat naik fail data dari laptop lain">
-                        <i class="fas fa-file-import mr-1"></i> Import Data
+                    <button onclick="manualSave()" class="text-xs bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-md shadow-sm text-white font-medium transition-colors border border-blue-500">
+                        <i class="fas fa-save mr-1"></i> <span data-i18n="btn_save">Simpan</span>
                     </button>
-                    <button onclick="exportData()" class="text-xs bg-yellow-500 hover:bg-yellow-600 px-3 py-1.5 rounded-md shadow-sm text-white font-medium transition-colors border border-yellow-500" title="Simpan fail data untuk dibuka di laptop lain">
-                        <i class="fas fa-file-export mr-1"></i> Eksport Data
+                    <button onclick="document.getElementById('importFile').click()" class="text-xs bg-green-600 hover:bg-green-700 px-3 py-1.5 rounded-md shadow-sm text-white font-medium transition-colors border border-green-500">
+                        <i class="fas fa-file-import mr-1"></i> <span data-i18n="btn_import">Import Data</span>
                     </button>
-                    <button onclick="resetData()" class="text-xs bg-red-600 hover:bg-red-700 px-3 py-1.5 rounded-md shadow-sm text-white font-medium transition-colors border border-red-500" title="Padam semua memori dan kembali ke template asal">
-                        <i class="fas fa-undo mr-1"></i> Reset Data
+                    <button onclick="exportData()" class="text-xs bg-yellow-500 hover:bg-yellow-600 px-3 py-1.5 rounded-md shadow-sm text-white font-medium transition-colors border border-yellow-500">
+                        <i class="fas fa-file-export mr-1"></i> <span data-i18n="btn_export">Eksport Data</span>
                     </button>
-                    <span class="text-sm font-medium bg-blue-700 px-3 py-1 rounded-full shadow-inner ml-2">Sesi Sept 2026 - Feb 2027</span>
+                    <button onclick="resetData()" class="text-xs bg-red-600 hover:bg-red-700 px-3 py-1.5 rounded-md shadow-sm text-white font-medium transition-colors border border-red-500">
+                        <i class="fas fa-undo mr-1"></i> <span data-i18n="btn_reset">Reset Data</span>
+                    </button>
+                    <span class="text-sm font-medium bg-blue-700 px-3 py-1 rounded-full shadow-inner ml-2" data-i18n="session_tag">Sesi Sept 2026 - Feb 2027</span>
+                    <button id="cloudStatusBadge" onclick="forceCloudSync()" class="text-sm font-medium bg-blue-900 hover:bg-blue-800 px-3 py-1 rounded-full shadow-inner ml-2 border border-blue-700 transition-colors">
+                        <i class="fas fa-cloud text-gray-400 mr-1"></i> <span data-i18n="cloud_offline">Luar Talian</span>
+                    </button>
+                    <!-- LANGUAGE TOGGLE BUTTON -->
+                    <button onclick="toggleLang()" class="text-sm font-bold bg-indigo-600 hover:bg-indigo-700 px-4 py-1 rounded-full shadow-inner ml-2 border border-indigo-500 transition-colors flex items-center gap-2">
+                        <i class="fas fa-language"></i> <span id="langToggleText">English</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -63,19 +65,19 @@
         <div class="border-b border-gray-200">
             <nav class="-mb-px flex space-x-8 overflow-x-auto" aria-label="Tabs">
                 <button onclick="switchTab('tab-subjek')" id="btn-tab-subjek" class="tab-btn border-blue-500 text-blue-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center">
-                    <i class="fas fa-book-open mr-2"></i> 1. Pengurusan Subjek
+                    <i class="fas fa-book-open mr-2"></i> <span data-i18n="tab_subjek">1. Pengurusan Subjek</span>
                 </button>
                 <button onclick="switchTab('tab-agihan')" id="btn-tab-agihan" class="tab-btn border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center">
-                    <i class="fas fa-tasks mr-2"></i> 2. Agihan Tugas & Beban
+                    <i class="fas fa-tasks mr-2"></i> <span data-i18n="tab_agihan">2. Agihan Tugas & Beban</span>
                 </button>
                 <button onclick="switchTab('tab-pensyarah')" id="btn-tab-pensyarah" class="tab-btn border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center">
-                    <i class="fas fa-chalkboard-teacher mr-2"></i> 3. Profil Pensyarah
+                    <i class="fas fa-chalkboard-teacher mr-2"></i> <span data-i18n="tab_pensyarah">3. Profil Pensyarah</span>
                 </button>
                 <button onclick="switchTab('tab-cetakan')" id="btn-tab-cetakan" class="tab-btn border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center">
-                    <i class="fas fa-file-alt mr-2"></i> 4. Laporan Subjek
+                    <i class="fas fa-file-alt mr-2"></i> <span data-i18n="tab_laporan_subjek">4. Laporan Subjek</span>
                 </button>
                 <button onclick="switchTab('tab-laporan-staf')" id="btn-tab-laporan-staf" class="tab-btn border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center">
-                    <i class="fas fa-user-tie mr-2"></i> 5. Laporan Pensyarah
+                    <i class="fas fa-user-tie mr-2"></i> <span data-i18n="tab_laporan_staf">5. Laporan Pensyarah</span>
                 </button>
             </nav>
         </div>
@@ -84,20 +86,29 @@
     <!-- Main Content Container -->
     <main class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         
+        <!-- Toast Notification -->
+        <div id="toastNotification" class="fixed bottom-5 right-5 bg-green-600 text-white px-4 py-3 rounded-lg shadow-xl transform transition-all duration-300 translate-y-24 opacity-0 z-50 flex items-center no-print">
+            <i id="toastIcon" class="fas fa-check-circle mr-3 text-2xl"></i>
+            <div>
+                <h4 id="toastTitle" class="font-bold text-sm">Berjaya Disimpan!</h4>
+                <p id="toastDesc" class="text-xs opacity-90">Data jadual anda telah direkodkan.</p>
+            </div>
+        </div>
+
         <!-- Header for Print -->
         <div class="hidden print:block text-center mb-6">
-            <h1 class="text-2xl font-bold uppercase">Dokumen Pengurusan Akademik JKM</h1>
-            <p class="text-gray-600">Sesi Pengajian: September 2026 - Februari 2027</p>
+            <h1 class="text-2xl font-bold uppercase" data-i18n="print_header">Dokumen Pengurusan Akademik JKM</h1>
+            <p class="text-gray-600" data-i18n="print_session">Sesi Pengajian: September 2026 - Februari 2027</p>
         </div>
 
         <!-- ========================================== -->
-        <!-- TAB 1: PENGURUSAN SUBJEK & SASARAN SEKSYEN -->
+        <!-- TAB 1: PENGURUSAN SUBJEK -->
         <!-- ========================================== -->
         <div id="tab-subjek" class="tab-content block">
             <div class="mb-4 flex justify-between items-center no-print">
-                <h2 class="text-xl font-bold text-gray-800">Senarai Kursus JKM & Sasaran Penawaran</h2>
+                <h2 class="text-xl font-bold text-gray-800" data-i18n="t1_title">Senarai Kursus JKM & Sasaran Penawaran</h2>
                 <button onclick="openSubjectModal()" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white shadow-sm text-sm font-medium rounded-lg">
-                    <i class="fas fa-plus mr-2"></i> Tambah Subjek Baru
+                    <i class="fas fa-plus mr-2"></i> <span data-i18n="btn_add_sub">Tambah Subjek Baru</span>
                 </button>
             </div>
             
@@ -105,56 +116,51 @@
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider w-12">Bil</th>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider w-24">Tahun</th>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider w-32">Kod Kursus</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Nama Kursus / Subjek</th>
-                            <th scope="col" class="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider w-24">Kategori</th>
-                            <th scope="col" class="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider w-40">Sasaran (Ditawarkan)</th>
-                            <th scope="col" class="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider w-32 no-print">Tindakan</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider w-12" data-i18n="th_no">Bil</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider w-24" data-i18n="th_year">Tahun</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider w-32" data-i18n="th_code">Kod Kursus</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider" data-i18n="th_name">Nama Kursus / Subjek</th>
+                            <th scope="col" class="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider w-24" data-i18n="th_cat">Kategori</th>
+                            <th scope="col" class="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider w-40" data-i18n="th_target">Sasaran (Ditawarkan)</th>
+                            <th scope="col" class="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider w-32 no-print" data-i18n="th_action">Tindakan</th>
                         </tr>
                     </thead>
-                    <tbody id="subjectsListBody" class="bg-white divide-y divide-gray-200">
-                        <!-- Populated by JS -->
-                    </tbody>
+                    <tbody id="subjectsListBody" class="bg-white divide-y divide-gray-200"></tbody>
                 </table>
             </div>
         </div>
 
         <!-- ========================================== -->
-        <!-- TAB 2: AGIHAN TUGAS (BERPUSATKAN SUBJEK)   -->
+        <!-- TAB 2: AGIHAN TUGAS -->
         <!-- ========================================== -->
         <div id="tab-agihan" class="tab-content hidden">
             <div class="mb-4 flex flex-col md:flex-row md:justify-between md:items-center gap-4 no-print">
                 <div>
-                    <h2 class="text-xl font-bold text-gray-800">Agihan Pensyarah Mengikut Subjek</h2>
-                    <p class="text-sm text-gray-500">Pilih subjek dan tetapkan pensyarah serta bilangan seksyen yang diajar.</p>
+                    <h2 class="text-xl font-bold text-gray-800" data-i18n="t2_title">Agihan Pensyarah Mengikut Subjek</h2>
+                    <p class="text-sm text-gray-500" data-i18n="t2_desc">Pilih subjek dan tetapkan pensyarah serta bilangan seksyen yang diajar.</p>
                 </div>
                 <button onclick="window.print()" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50">
-                    <i class="fas fa-print mr-2"></i> Cetak Agihan Semasa
+                    <i class="fas fa-print mr-2"></i> <span data-i18n="btn_print_alloc">Cetak Agihan Semasa</span>
                 </button>
             </div>
-
-            <div id="assignmentContainer" class="space-y-6">
-                <!-- Cards for each subject will be injected here by JS -->
-            </div>
+            <div id="assignmentContainer" class="space-y-6"></div>
         </div>
 
         <!-- ========================================== -->
-        <!-- TAB 3: PROFIL PENSYARAH & KALKULATOR BEBAN -->
+        <!-- TAB 3: PROFIL PENSYARAH -->
         <!-- ========================================== -->
         <div id="tab-pensyarah" class="tab-content hidden">
             <div class="mb-4 flex justify-between items-center no-print">
                 <div>
-                    <h2 class="text-xl font-bold text-gray-800">Senarai Penuh & Pengurusan Profil Pensyarah</h2>
-                    <p class="text-sm text-gray-500">Gunakan Mod Admin untuk mengedit jawatan, status, atau menambah pensyarah baru.</p>
+                    <h2 class="text-xl font-bold text-gray-800" data-i18n="t3_title">Senarai Penuh & Pengurusan Profil Pensyarah</h2>
+                    <p class="text-sm text-gray-500" data-i18n="t3_desc">Gunakan Mod Admin untuk mengedit jawatan, status, atau menambah pensyarah baru.</p>
                 </div>
                 <div class="flex gap-2">
                     <button onclick="toggleAdminMode()" id="adminToggleBtn" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50">
-                        <i class="fas fa-user-shield mr-2 text-gray-500" id="adminToggleIcon"></i> <span id="adminToggleText">Mod Admin (Tutup)</span>
+                        <i class="fas fa-user-shield mr-2 text-gray-500" id="adminToggleIcon"></i> <span id="adminToggleText">Mod Admin (Off)</span>
                     </button>
                     <button onclick="openStaffModal()" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white shadow-sm text-sm font-medium rounded-lg">
-                        <i class="fas fa-plus mr-2"></i> Tambah Staf Baru
+                        <i class="fas fa-plus mr-2"></i> <span data-i18n="btn_add_staff">Tambah Staf Baru</span>
                     </button>
                 </div>
             </div>
@@ -163,39 +169,36 @@
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-blue-50">
                         <tr>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider w-12">Bil</th>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider w-24">No. Staf</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Nama Pensyarah</th>
-                            <th scope="col" class="px-4 py-3 text-center text-xs font-bold text-gray-600 uppercase tracking-wider w-28">Status</th>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider w-40">Jawatan Luar/Dalam Fakulti</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Sejarah Pengajaran (Pernah Ajar)</th>
-                            <th scope="col" class="px-4 py-3 text-center text-xs font-bold text-gray-600 uppercase tracking-wider min-w-[220px]">Pecahan Beban Mata Semasa</th>
-                            <th scope="col" class="px-4 py-3 text-center text-xs font-bold text-gray-600 uppercase tracking-wider w-24 no-print admin-col hidden">Tindakan</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider w-12" data-i18n="th_no">Bil</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider w-24" data-i18n="th_staff_no">No. Staf</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider" data-i18n="th_staff_name">Nama Pensyarah</th>
+                            <th scope="col" class="px-4 py-3 text-center text-xs font-bold text-gray-600 uppercase tracking-wider w-28" data-i18n="th_status">Status</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider w-40" data-i18n="th_role">Jawatan Luar/Dalam Fakulti</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider" data-i18n="th_history">Sejarah Pengajaran (Pernah Ajar)</th>
+                            <th scope="col" class="px-4 py-3 text-center text-xs font-bold text-gray-600 uppercase tracking-wider min-w-[220px]" data-i18n="th_load">Beban Mata Semasa</th>
+                            <th scope="col" class="px-4 py-3 text-center text-xs font-bold text-gray-600 uppercase tracking-wider w-24 no-print admin-col hidden" data-i18n="th_action">Tindakan</th>
                         </tr>
                     </thead>
-                    <tbody id="staffListBody" class="bg-white divide-y divide-gray-200">
-                        <!-- Populated by JS -->
-                    </tbody>
+                    <tbody id="staffListBody" class="bg-white divide-y divide-gray-200"></tbody>
                 </table>
             </div>
         </div>
 
         <!-- ========================================== -->
-        <!-- TAB 4: LAPORAN CETAKAN RASMI (FORMAT UNIVERSITI) -->
+        <!-- TAB 4: LAPORAN SUBJEK -->
         <!-- ========================================== -->
         <div id="tab-cetakan" class="tab-content hidden">
             <div class="mb-6 flex flex-col md:flex-row md:justify-between md:items-center gap-4 no-print">
                 <div>
-                    <h2 class="text-2xl font-bold text-gray-900">Laporan Subjek (Format Cetakan Rasmi)</h2>
-                    <p class="text-sm text-gray-500">Paparan auto-jana berdasarkan agihan di tab sebelumnya.</p>
+                    <h2 class="text-2xl font-bold text-gray-900" data-i18n="t4_title">Laporan Subjek (Format Cetakan Rasmi)</h2>
+                    <p class="text-sm text-gray-500" data-i18n="t4_desc">Paparan auto-jana berdasarkan agihan di tab sebelumnya.</p>
                 </div>
                 <div class="flex gap-3 items-center">
                     <select id="reportFilter" onchange="renderPrintView()" class="border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500">
                         <option value="ALL">-- Tunjuk Semua Subjek --</option>
-                        <!-- Populated by JS -->
                     </select>
                     <button onclick="window.print()" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white shadow-sm text-sm font-medium rounded-lg">
-                        <i class="fas fa-print mr-2"></i> Simpan PDF / Cetak
+                        <i class="fas fa-print mr-2"></i> <span data-i18n="btn_print_pdf">Simpan PDF / Cetak</span>
                     </button>
                 </div>
             </div>
@@ -204,41 +207,38 @@
                 <table class="min-w-full print-table text-sm border-collapse border border-gray-300">
                     <thead class="bg-gray-100 print:bg-gray-200">
                         <tr>
-                            <th class="border border-gray-300 px-2 py-2 font-bold text-center w-10">Bil</th>
-                            <th class="border border-gray-300 px-2 py-2 font-bold text-center w-28">Kod Kursus</th>
-                            <th class="border border-gray-300 px-3 py-2 font-bold text-left">Kursus</th>
-                            <th class="border border-gray-300 px-2 py-2 font-bold text-center w-20">Panel</th>
-                            <th class="border border-gray-300 px-2 py-2 font-bold text-center w-20">Seksyen</th>
-                            <th class="border border-gray-300 px-3 py-2 font-bold text-left">Pensyarah / Pengajar</th>
-                            <th class="border border-gray-300 px-3 py-2 font-bold text-left">Penyelaras</th>
+                            <th class="border border-gray-300 px-2 py-2 font-bold text-center w-10" data-i18n="th_no">Bil</th>
+                            <th class="border border-gray-300 px-2 py-2 font-bold text-center w-28" data-i18n="th_code">Kod Kursus</th>
+                            <th class="border border-gray-300 px-3 py-2 font-bold text-left" data-i18n="th_course">Kursus</th>
+                            <th class="border border-gray-300 px-2 py-2 font-bold text-center w-20" data-i18n="th_panel">Panel</th>
+                            <th class="border border-gray-300 px-2 py-2 font-bold text-center w-20" data-i18n="th_sec">Seksyen</th>
+                            <th class="border border-gray-300 px-3 py-2 font-bold text-left" data-i18n="th_lecturer">Pensyarah / Pengajar</th>
+                            <th class="border border-gray-300 px-3 py-2 font-bold text-left" data-i18n="th_coord">Penyelaras</th>
                             <th class="border border-gray-300 px-2 py-2 font-bold text-center w-8">K</th>
                             <th class="border border-gray-300 px-2 py-2 font-bold text-center w-8">T</th>
                             <th class="border border-gray-300 px-2 py-2 font-bold text-center w-8">A</th>
                         </tr>
                     </thead>
-                    <tbody id="printListBody">
-                        <!-- Populated by JS -->
-                    </tbody>
+                    <tbody id="printListBody"></tbody>
                 </table>
             </div>
         </div>
 
         <!-- ========================================== -->
-        <!-- TAB 5: LAPORAN CETAKAN PENSYARAH (INDIVIDU)-->
+        <!-- TAB 5: LAPORAN PENSYARAH -->
         <!-- ========================================== -->
         <div id="tab-laporan-staf" class="tab-content hidden">
             <div class="mb-6 flex flex-col md:flex-row md:justify-between md:items-center gap-4 no-print">
                 <div>
-                    <h2 class="text-2xl font-bold text-gray-900">Laporan Agihan Tugas Mengikut Individu (Pensyarah)</h2>
-                    <p class="text-sm text-gray-500">Paparan auto-jana beban pengajaran untuk cetakan staf perseorangan atau keseluruhan jabatan.</p>
+                    <h2 class="text-2xl font-bold text-gray-900" data-i18n="t5_title">Laporan Agihan Tugas Mengikut Individu</h2>
+                    <p class="text-sm text-gray-500" data-i18n="t5_desc">Paparan auto-jana beban pengajaran untuk cetakan staf perseorangan atau keseluruhan jabatan.</p>
                 </div>
                 <div class="flex gap-3 items-center">
                     <select id="staffReportFilter" onchange="renderStaffReportTab()" class="border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500">
                         <option value="ALL">-- Tunjuk Semua Pensyarah --</option>
-                        <!-- Populated by JS -->
                     </select>
                     <button onclick="window.print()" class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white shadow-sm text-sm font-medium rounded-lg">
-                        <i class="fas fa-print mr-2"></i> Simpan PDF / Cetak Laporan Staf
+                        <i class="fas fa-print mr-2"></i> <span data-i18n="btn_print_staff_pdf">Simpan PDF / Cetak Laporan Staf</span>
                     </button>
                 </div>
             </div>
@@ -247,67 +247,65 @@
                 <table class="min-w-full print-table text-sm border-collapse border border-gray-300">
                     <thead class="bg-gray-100 print:bg-gray-200">
                         <tr>
-                            <th class="border border-gray-300 px-2 py-2 font-bold text-center w-10">Bil</th>
-                            <th class="border border-gray-300 px-2 py-2 font-bold text-center w-24">No. Staf</th>
-                            <th class="border border-gray-300 px-3 py-2 font-bold text-left w-64">Nama Pensyarah</th>
-                            <th class="border border-gray-300 px-2 py-2 font-bold text-center w-28">Kod Kursus</th>
-                            <th class="border border-gray-300 px-3 py-2 font-bold text-left">Kursus / Subjek</th>
-                            <th class="border border-gray-300 px-2 py-2 font-bold text-center w-20" title="Bilangan Seksyen & Jika Berkongsi">Seksyen</th>
-                            <th class="border border-gray-300 px-2 py-2 font-bold text-center w-20">Mata Subjek</th>
-                            <th class="border border-gray-300 px-2 py-2 font-bold text-center w-28">Jumlah Keseluruhan</th>
+                            <th class="border border-gray-300 px-2 py-2 font-bold text-center w-10" data-i18n="th_no">Bil</th>
+                            <th class="border border-gray-300 px-2 py-2 font-bold text-center w-24" data-i18n="th_staff_no">No. Staf</th>
+                            <th class="border border-gray-300 px-3 py-2 font-bold text-left w-64" data-i18n="th_staff_name">Nama Pensyarah</th>
+                            <th class="border border-gray-300 px-2 py-2 font-bold text-center w-28" data-i18n="th_code">Kod Kursus</th>
+                            <th class="border border-gray-300 px-3 py-2 font-bold text-left" data-i18n="th_course">Kursus / Subjek</th>
+                            <th class="border border-gray-300 px-2 py-2 font-bold text-center w-20" data-i18n="th_sec">Seksyen</th>
+                            <th class="border border-gray-300 px-2 py-2 font-bold text-center w-20" data-i18n="th_points">Mata Subjek</th>
+                            <th class="border border-gray-300 px-2 py-2 font-bold text-center w-28" data-i18n="th_total">Jumlah Keseluruhan</th>
                         </tr>
                     </thead>
-                    <tbody id="printStaffListBody">
-                        <!-- Populated by JS -->
-                    </tbody>
+                    <tbody id="printStaffListBody"></tbody>
                 </table>
             </div>
         </div>
 
         <!-- ========================================== -->
-        <!-- MODALS (TAMBAH SUBJEK & TAMBAH STAF)       -->
+        <!-- MODALS -->
         <!-- ========================================== -->
         <!-- Modal Subjek -->
         <div id="subjectModal" class="fixed inset-0 z-50 hidden bg-gray-900 bg-opacity-50 flex items-center justify-center no-print">
             <div class="bg-white rounded-xl shadow-xl w-full max-w-md mx-4">
                 <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-                    <h3 class="text-lg font-bold text-gray-900" id="subjectModalTitle">Tambah Subjek Baru</h3>
+                    <h3 class="text-lg font-bold text-gray-900" id="subjectModalTitle" data-i18n="mod_sub_add">Tambah Subjek Baru</h3>
                     <button onclick="closeSubjectModal()" class="text-gray-400 hover:text-gray-600 focus:outline-none"><i class="fas fa-times text-xl"></i></button>
                 </div>
                 <form onsubmit="saveSubject(event)">
                     <div class="p-6 space-y-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Tahun Penawaran</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="lbl_sub_year">Tahun Penawaran</label>
                             <select id="subTahun" class="w-full border border-gray-300 rounded-md py-2 px-3">
-                                <option value="Tahun 1">Tahun 1</option><option value="Tahun 2">Tahun 2</option>
-                                <option value="Tahun 3">Tahun 3</option><option value="Tahun 4">Tahun 4</option>
-                                <option value="Elektif">Elektif</option>
+                                <option value="Tahun 1">Tahun 1 / Year 1</option><option value="Tahun 2">Tahun 2 / Year 2</option>
+                                <option value="Tahun 3">Tahun 3 / Year 3</option><option value="Tahun 4">Tahun 4 / Year 4</option>
+                                <option value="Elektif">Elektif / Elective</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Kod Kursus</label>
-                            <input type="text" id="subKod" required class="w-full border border-gray-300 rounded-md py-2 px-3" placeholder="Contoh: BDA 12345">
+                            <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="lbl_sub_code">Kod Kursus</label>
+                            <input type="text" id="subKod" required class="w-full border border-gray-300 rounded-md py-2 px-3">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Nama Kursus</label>
-                            <input type="text" id="subNama" required class="w-full border border-gray-300 rounded-md py-2 px-3" placeholder="Contoh: Thermodynamics">
+                            <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="lbl_sub_name">Nama Kursus</label>
+                            <input type="text" id="subNama" required class="w-full border border-gray-300 rounded-md py-2 px-3">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="lbl_sub_cat">Kategori</label>
                             <select id="subKategori" class="w-full border border-gray-300 rounded-md py-2 px-3">
-                                <option value="Teras">Teras</option>
-                                <option value="Makmal">Makmal</option>
-                                <option value="Elektif">Elektif</option>
+                                <option value="Teras">Teras / Core</option>
+                                <option value="Makmal">Makmal / Lab</option>
+                                <option value="Elektif">Elektif / Elective</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Sasaran Seksyen</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="lbl_sub_target">Sasaran Seksyen</label>
                             <input type="number" id="subTarget" required min="1" class="w-full border border-gray-300 rounded-md py-2 px-3" value="1">
                         </div>
                     </div>
                     <div class="px-6 py-4 bg-gray-50 border-t flex justify-end gap-3 rounded-b-xl">
-                        <button type="button" onclick="closeSubjectModal()" class="px-4 py-2 border rounded-md bg-white">Batal</button>
-                        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md">Simpan</button>
+                        <button type="button" onclick="closeSubjectModal()" class="px-4 py-2 border rounded-md bg-white" data-i18n="btn_cancel">Batal</button>
+                        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md" data-i18n="btn_save">Simpan</button>
                     </div>
                 </form>
             </div>
@@ -317,46 +315,38 @@
         <div id="staffModal" class="fixed inset-0 z-50 hidden bg-gray-900 bg-opacity-50 flex items-center justify-center no-print">
             <div class="bg-white rounded-xl shadow-xl w-full max-w-lg mx-4">
                 <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-                    <h3 class="text-lg font-bold text-gray-900" id="staffModalTitle">Tambah Staf Baru</h3>
+                    <h3 class="text-lg font-bold text-gray-900" id="staffModalTitle" data-i18n="mod_staff_add">Tambah Staf Baru</h3>
                     <button onclick="closeStaffModal()" class="text-gray-400 hover:text-gray-600 focus:outline-none"><i class="fas fa-times text-xl"></i></button>
                 </div>
                 <form onsubmit="saveStaff(event)">
                     <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">No. Staf</label>
-                            <input type="text" id="formNoStaf" required class="w-full border border-gray-300 rounded-md py-2 px-3" placeholder="Contoh: 1234">
+                            <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="lbl_staff_no">No. Staf</label>
+                            <input type="text" id="formNoStaf" required class="w-full border border-gray-300 rounded-md py-2 px-3">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Nama Penuh</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="lbl_staff_name">Nama Penuh</label>
                             <input type="text" id="formName" required class="w-full border border-gray-300 rounded-md py-2 px-3">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Status Pengajaran</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="lbl_staff_status">Status Pengajaran</label>
                             <select id="formStatus" class="w-full border border-gray-300 rounded-md py-2 px-3">
-                                <option value="Aktif">Aktif</option>
-                                <option value="Tidak Aktif">Tidak Aktif (Cuti / Sabatikal)</option>
+                                <option value="Aktif">Aktif / Active</option>
+                                <option value="Tidak Aktif">Tidak Aktif / Inactive</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Jawatan Luar/Dalam Fakulti</label>
-                            <input type="text" id="formJawatan" class="w-full border border-gray-300 rounded-md py-2 px-3" placeholder="Contoh: Penyelaras Projek Sarjana Muda">
+                            <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="lbl_staff_role">Jawatan Luar/Dalam Fakulti</label>
+                            <input type="text" id="formJawatan" class="w-full border border-gray-300 rounded-md py-2 px-3">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Sejarah Pengajaran (Subjek Pernah Diajar)</label>
-                            <input type="text" id="formHistory" class="w-full border border-gray-300 rounded-md py-2 px-3" placeholder="Contoh: Statics, Dynamics">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Pilihan Survey</label>
-                            <input type="text" id="formSurvey" class="w-full border border-gray-300 rounded-md py-2 px-3">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Catatan</label>
-                            <input type="text" id="formNote" class="w-full border border-gray-300 rounded-md py-2 px-3">
+                            <label class="block text-sm font-medium text-gray-700 mb-1" data-i18n="lbl_staff_history">Sejarah Pengajaran (Subjek Pernah Diajar)</label>
+                            <input type="text" id="formHistory" class="w-full border border-gray-300 rounded-md py-2 px-3">
                         </div>
                     </div>
                     <div class="px-6 py-4 bg-gray-50 border-t flex justify-end gap-3 rounded-b-xl">
-                        <button type="button" onclick="closeStaffModal()" class="px-4 py-2 border rounded-md bg-white">Batal</button>
-                        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md">Simpan</button>
+                        <button type="button" onclick="closeStaffModal()" class="px-4 py-2 border rounded-md bg-white" data-i18n="btn_cancel">Batal</button>
+                        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md" data-i18n="btn_save">Simpan</button>
                     </div>
                 </form>
             </div>
@@ -364,27 +354,91 @@
     </main>
 
     <script>
+        // ==========================================
+        // TRANSLATION ENGINE (I18N)
+        // ==========================================
+        const i18n = {
+            ms: {
+                nav_title: "Penyusun Interaktif Jadual Beban JKM", btn_save: "Simpan", btn_import: "Import Data", btn_export: "Eksport Data", btn_reset: "Reset Data", session_tag: "Sesi Sept 2026 - Feb 2027", cloud_offline: "Luar Talian", cloud_online: "Awan Aktif",
+                tab_subjek: "1. Pengurusan Subjek", tab_agihan: "2. Agihan Tugas & Beban", tab_pensyarah: "3. Profil Pensyarah", tab_laporan_subjek: "4. Laporan Subjek", tab_laporan_staf: "5. Laporan Pensyarah",
+                print_header: "Dokumen Pengurusan Akademik JKM", print_session: "Sesi Pengajian: September 2026 - Februari 2027",
+                t1_title: "Senarai Kursus JKM & Sasaran Penawaran", btn_add_sub: "Tambah Subjek Baru", th_no: "Bil", th_year: "Tahun", th_code: "Kod Kursus", th_name: "Nama Kursus / Subjek", th_cat: "Kategori", th_target: "Sasaran (Ditawarkan)", th_action: "Tindakan",
+                t2_title: "Agihan Pensyarah Mengikut Subjek", t2_desc: "Pilih subjek dan tetapkan pensyarah serta bilangan seksyen yang diajar.", btn_print_alloc: "Cetak Agihan Semasa",
+                t3_title: "Senarai Penuh & Pengurusan Profil Pensyarah", t3_desc: "Gunakan Mod Admin untuk mengedit jawatan, status, atau menambah pensyarah baru.", btn_add_staff: "Tambah Staf Baru", th_staff_no: "No. Staf", th_staff_name: "Nama Pensyarah", th_status: "Status", th_role: "Jawatan", th_history: "Sejarah Pengajaran (Pernah Ajar)", th_load: "Beban Mata Semasa",
+                t4_title: "Laporan Subjek (Format Cetakan Rasmi)", t4_desc: "Paparan auto-jana berdasarkan agihan di tab sebelumnya.", btn_print_pdf: "Simpan PDF / Cetak", th_course: "Kursus", th_panel: "Panel", th_sec: "Seksyen", th_lecturer: "Pensyarah / Pengajar", th_coord: "Penyelaras",
+                t5_title: "Laporan Agihan Tugas Mengikut Individu", t5_desc: "Paparan auto-jana beban pengajaran untuk cetakan staf perseorangan atau keseluruhan jabatan.", btn_print_staff_pdf: "Simpan PDF / Cetak Laporan Staf", th_points: "Mata Subjek", th_total: "Jumlah Keseluruhan",
+                mod_sub_add: "Tambah Subjek Baru", mod_sub_edit: "Edit Subjek", lbl_sub_year: "Tahun Penawaran", lbl_sub_code: "Kod Kursus", lbl_sub_name: "Nama Kursus", lbl_sub_cat: "Kategori", lbl_sub_target: "Sasaran Seksyen", btn_cancel: "Batal",
+                mod_staff_add: "Tambah Staf Baru", mod_staff_edit: "Edit Maklumat Staf", lbl_staff_no: "No. Staf", lbl_staff_name: "Nama Penuh", lbl_staff_status: "Status Pengajaran", lbl_staff_role: "Jawatan Luar/Dalam Fakulti", lbl_staff_history: "Sejarah Pengajaran (Subjek Pernah Diajar)",
+                txt_admin_off: "Mod Admin (Tutup)", txt_admin_on: "Mod Admin (Buka)", txt_active: "Aktif", txt_inactive: "Tidak Aktif", txt_points: "Mata", txt_total: "Jumlah", txt_unassigned: "BELUM DIAGIH", txt_share: "Kongsi", txt_sec: "Seksyen", txt_filled: "Diisi", txt_short: "Kurang", txt_over: "Terlebih", txt_complete: "Lengkap", txt_target_load: "Beban Sasaran", txt_add_lecturer: "Tambah Pensyarah", txt_choose_staff: "-- Pilih Staf --", txt_recom: "⭐ Disyorkan (Pernah Ajar)", txt_other_active: "Staf Aktif Lain", txt_inactive_staff: "Tidak Aktif / Cuti", txt_all_sub: "-- Tunjuk Semua Subjek --", txt_all_staff: "-- Tunjuk Semua Pensyarah --", txt_no_assign: "Belum ada agihan tugas", txt_shared_with: "Berkongsi dengan:", txt_not_found: "STAF TIDAK JUMPA",
+                msg_save_title: "Berjaya Disimpan!", msg_save_desc: "Data jadual anda telah direkodkan ke dalam memori.", msg_sync_title: "Sinkronisasi Awan", msg_sync_desc: "AJK lain telah membuat perubahan baharu. Jadual disegar semula.", msg_cloud_save: "Tersimpan di Awan!", msg_cloud_save_desc: "Jadual anda dikongsi secara langsung.", msg_offline: "Mod Luar Talian", msg_offline_desc: "Gagal disambung ke awan. Disimpan di komputer sahaja.", msg_cloud_conn: "Disambung ke Awan", msg_cloud_conn_desc: "Sistem jadual kolaborasi telah aktif.", msg_reset_warn: "AWAS: Adakah anda pasti mahu RESET (padam) semua memori jadual yang telah diagihkan dan kembali kepada senarai kosong asal?", msg_import_warn: "Amaran: Tindakan ini akan memadam data di skrin anda sekarang dan menggantikannya dengan fail yang diimport. Teruskan?", msg_del_sub: "Pasti mahu padam subjek ini? Semua agihan staf untuk subjek ini akan terpadam.", msg_del_staff: "Adakah anda pasti mahu memadam staf ini dari jadual?"
+            },
+            en: {
+                nav_title: "Interactive JKM Workload Scheduler", btn_save: "Save", btn_import: "Import Data", btn_export: "Export Data", btn_reset: "Reset Data", session_tag: "Session Sept 2026 - Feb 2027", cloud_offline: "Offline", cloud_online: "Cloud Active",
+                tab_subjek: "1. Subject Management", tab_agihan: "2. Task Allocation", tab_pensyarah: "3. Lecturer Profile", tab_laporan_subjek: "4. Subject Report", tab_laporan_staf: "5. Lecturer Report",
+                print_header: "JKM Academic Management Document", print_session: "Academic Session: September 2026 - February 2027",
+                t1_title: "JKM Course List & Offer Targets", btn_add_sub: "Add New Subject", th_no: "No", th_year: "Year", th_code: "Course Code", th_name: "Course / Subject Name", th_cat: "Category", th_target: "Target (Offered)", th_action: "Action",
+                t2_title: "Lecturer Allocation by Subject", t2_desc: "Select a subject and assign lecturers and the number of sections taught.", btn_print_alloc: "Print Current Allocation",
+                t3_title: "Full List & Lecturer Profile Management", t3_desc: "Use Admin Mode to edit roles, status, or add new lecturers.", btn_add_staff: "Add New Staff", th_staff_no: "Staff No.", th_staff_name: "Lecturer Name", th_status: "Status", th_role: "Role", th_history: "Teaching History (Previously Taught)", th_load: "Current Points Load",
+                t4_title: "Subject Report (Official Print Format)", t4_desc: "Auto-generated view based on allocations in previous tabs.", btn_print_pdf: "Save PDF / Print", th_course: "Course", th_panel: "Panel", th_sec: "Section", th_lecturer: "Lecturer / Instructor", th_coord: "Coordinator",
+                t5_title: "Individual Task Allocation Report", t5_desc: "Auto-generated teaching load view for individual or departmental printing.", btn_print_staff_pdf: "Save PDF / Print Staff Report", th_points: "Subject Points", th_total: "Overall Total",
+                mod_sub_add: "Add New Subject", mod_sub_edit: "Edit Subject", lbl_sub_year: "Offering Year", lbl_sub_code: "Course Code", lbl_sub_name: "Course Name", lbl_sub_cat: "Category", lbl_sub_target: "Section Target", btn_cancel: "Cancel",
+                mod_staff_add: "Add New Staff", mod_staff_edit: "Edit Staff Info", lbl_staff_no: "Staff No.", lbl_staff_name: "Full Name", lbl_staff_status: "Teaching Status", lbl_staff_role: "Internal/External Role", lbl_staff_history: "Teaching History (Subjects Taught)",
+                txt_admin_off: "Admin Mode (Off)", txt_admin_on: "Admin Mode (On)", txt_active: "Active", txt_inactive: "Inactive", txt_points: "Points", txt_total: "Total", txt_unassigned: "UNASSIGNED", txt_share: "Share", txt_sec: "Section", txt_filled: "Filled", txt_short: "Short", txt_over: "Over", txt_complete: "Complete", txt_target_load: "Target Load", txt_add_lecturer: "Add Lecturer", txt_choose_staff: "-- Select Staff --", txt_recom: "⭐ Recommended (Taught Before)", txt_other_active: "Other Active Staff", txt_inactive_staff: "Inactive / Leave", txt_all_sub: "-- Show All Subjects --", txt_all_staff: "-- Show All Lecturers --", txt_no_assign: "No task allocated yet", txt_shared_with: "Shared with:", txt_not_found: "STAFF NOT FOUND",
+                msg_save_title: "Successfully Saved!", msg_save_desc: "Your schedule data has been recorded in memory.", msg_sync_title: "Cloud Sync", msg_sync_desc: "Others have made new changes. Schedule refreshed.", msg_cloud_save: "Saved to Cloud!", msg_cloud_save_desc: "Your schedule is shared in real-time.", msg_offline: "Offline Mode", msg_offline_desc: "Failed to connect to cloud. Saved locally only.", msg_cloud_conn: "Connected to Cloud", msg_cloud_conn_desc: "Collaborative schedule system is active.", msg_reset_warn: "WARNING: Are you sure you want to RESET (delete) all allocated schedule memory and return to the original empty list?", msg_import_warn: "Warning: This action will overwrite your current screen data with the imported file. Continue?", msg_del_sub: "Are you sure you want to delete this subject? All staff allocations for this subject will be removed.", msg_del_staff: "Are you sure you want to delete this staff member from the schedule?"
+            }
+        };
+
+        let currentLang = localStorage.getItem('jkm_lang_pref') || 'ms';
+
+        function t(key) {
+            return i18n[currentLang][key] || key;
+        }
+
+        function toggleLang() {
+            currentLang = currentLang === 'ms' ? 'en' : 'ms';
+            localStorage.setItem('jkm_lang_pref', currentLang);
+            applyLanguage();
+        }
+
+        function applyLanguage() {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (i18n[currentLang][key]) {
+                    el.innerHTML = i18n[currentLang][key];
+                }
+            });
+            document.getElementById('langToggleText').innerText = currentLang === 'ms' ? 'English' : 'Bahasa Melayu';
+            
+            // Re-render UI components to inject translated JS strings
+            if (subjectsData.length > 0) {
+                renderSubjectsTab();
+                if(!document.getElementById('tab-agihan').classList.contains('hidden')) renderAssignmentTab();
+                if(!document.getElementById('tab-pensyarah').classList.contains('hidden')) renderStaffListTab();
+                if(!document.getElementById('tab-cetakan').classList.contains('hidden')) renderPrintView();
+                if(!document.getElementById('tab-laporan-staf').classList.contains('hidden')) renderStaffReportTab();
+                
+                // Update Admin Mode Text correctly
+                const adminText = document.getElementById('adminToggleText');
+                if (adminText) adminText.innerText = isAdminMode ? t('txt_admin_on') : t('txt_admin_off');
+            }
+        }
+
+        // ==========================================
+        // DATABASE MOCK & CORE LOGIC
+        // ==========================================
         let isAdminMode = false;
         let editingStaffId = null;
 
-        // ==========================================
-        // DATA SUBJEK & STAF (DATABASE MOCK)
-        // ==========================================
         const defaultSubjectsData = [
-            // Tahun 1
-            { id: 1, year: "Tahun 1", code: "BDA 10203", name: "Statics", type: "Teras", targetSec: 6, assigned: [] },
+            { id: 1, year: "Tahun 1", code: "BDA 10203", name: "Statics", type: "Teras", targetSec: 1, assigned: [] },
             { id: 2, year: "Tahun 1", code: "BDA 10903", name: "Solid Mechanics I", type: "Teras", targetSec: 8, assigned: [] },
             { id: 3, year: "Tahun 1", code: "BDA 17301", name: "Engineering Mechanics Laboratory I (New)", type: "Makmal", targetSec: 6, assigned: [] },
-            
-            // Tahun 2
             { id: 4, year: "Tahun 2", code: "BDA 20103", name: "Dynamics", type: "Teras", targetSec: 6, assigned: [] },
             { id: 5, year: "Tahun 2", code: "BDA 20303", name: "Mechanics of Machine (KOD LAMA)", type: "Teras", targetSec: 1, assigned: [] },
             { id: 6, year: "Tahun 2", code: "BDA 21402", name: "Mechanics of Machine (NEW)", type: "Teras", targetSec: 4, assigned: [] },
             { id: 7, year: "Tahun 2", code: "BDA 21302", name: "Solid Mechanics II (NEW)", type: "Teras", targetSec: 8, assigned: [] },
             { id: 8, year: "Tahun 2", code: "BDA 20903", name: "Solid Mechanics II (KOD LAMA)", type: "Teras", targetSec: 1, assigned: [] },
             { id: 9, year: "Tahun 2", code: "BDA 21202", name: "Instrumentation", type: "Teras", targetSec: 8, assigned: [] },
-            
-            // Tahun 3
             { id: 10, year: "Tahun 3", code: "BDA 31302", name: "Occupational Safety and Health", type: "Teras", targetSec: 2, assigned: [] },
             { id: 11, year: "Tahun 3", code: "BDA 30703", name: "Control Engineering", type: "Teras", targetSec: 6, assigned: [] },
             { id: 12, year: "Tahun 3", code: "BDA 34103", name: "Numerical Methods (KOD LAMA)", type: "Teras", targetSec: 1, assigned: [] },
@@ -392,98 +446,123 @@
             { id: 14, year: "Tahun 3", code: "BDA 31103", name: "Vibration", type: "Teras", targetSec: 8, assigned: [] },
             { id: 15, year: "Tahun 3", code: "BDA 37401", name: "Engineering Mechanics Laboratory II", type: "Makmal", targetSec: 8, assigned: [] },
             { id: 16, year: "Tahun 3", code: "BDA 37601", name: "Engineering Mechanics Laboratory III", type: "Makmal", targetSec: 6, assigned: [] },
-            
-            // Tahun 4 (PECAHAN FEM KEPADA KULIAH & MAKMAL)
             { id: 17, year: "Tahun 4", code: "BDA 31003", name: "Finite Element Method (KULIAH)", type: "Teras", targetSec: 6, assigned: [] },
             { id: 18, year: "Tahun 4", code: "BDA 31003", name: "Finite Element Method (MAKMAL)", type: "Makmal", targetSec: 6, assigned: [] },
-            
-            // Elektif
-            { id: 19, year: "Elektif", code: "BDC 41403", name: "Industrial Revolution 4.0 and Digital Transformation", type: "Elektif", targetSec: 2, assigned: [] },
-            { id: 20, year: "Elektif", code: "BDI 40203", name: "Modeling and Simulation/System Modelling and Simulation", type: "Elektif", targetSec: 2, assigned: [] },
-            { id: 21, year: "Elektif", code: "BDI 41103", name: "Solid Mechanics Simulation/Advanced Solid Mechanics", type: "Elektif", targetSec: 2, assigned: [] },
-            { id: 22, year: "Elektif", code: "BDC 40803", name: "Acoustics and Noise Control", type: "Elektif", targetSec: 2, assigned: [] },
-            { id: 23, year: "Elektif", code: "BDC 41003", name: "Data Science on Artificial Intelligence", type: "Elektif", targetSec: 2, assigned: [] },
-            { id: 24, year: "Elektif", code: "BDC 41203", name: "Applied Non Destructive Testing", type: "Elektif", targetSec: 2, assigned: [] },
-            { id: 25, year: "Elektif", code: "BDN 40403", name: "Automation and Control Eng. In Ship", type: "Elektif", targetSec: 2, assigned: [] }
+            { id: 19, year: "Elektif", code: "BDC 41403", name: "Industrial Revolution 4.0 and Digital Transform", type: "Elektif", targetSec: 1, assigned: [] },
+            { id: 20, year: "Elektif", code: "BDI 40203", name: "Modeling and Simulation/System Modelling an...", type: "Elektif", targetSec: 1, assigned: [] },
+            { id: 21, year: "Elektif", code: "BDI 41103", name: "Solid Mechanics Simulation/Advanced Solid Me...", type: "Elektif", targetSec: 1, assigned: [] },
+            { id: 22, year: "Elektif", code: "BDC 40803", name: "Acoustics and Noise Control", type: "Elektif", targetSec: 1, assigned: [] },
+            { id: 23, year: "Elektif", code: "BDC 41503", name: "Railway Engineering", type: "Elektif", targetSec: 1, assigned: [] },
+            { id: 24, year: "Elektif", code: "BDC 41603", name: "Train Control System", type: "Elektif", targetSec: 1, assigned: [] },
+            { id: 25, year: "Elektif", code: "BDC 41703", name: "Rolling Stock and Traction Systems", type: "Elektif", targetSec: 1, assigned: [] },
+            { id: 26, year: "Elektif", code: "BDN 40403", name: "Automation and Control Eng. In Ship", type: "Elektif", targetSec: 1, assigned: [] },
+            { id: 27, year: "Elektif", code: "BDC 41003", name: "Data Science on Artificial Intelligence", type: "Elektif", targetSec: 1, assigned: [] },
+            { id: 28, year: "Elektif", code: "BDC 41203", name: "Applied Non Destructive Testing", type: "Elektif", targetSec: 1, assigned: [] }
         ];
 
         const defaultStaffData = [
-            { id: 1, noStaf: "400", name: "Prof. Madya Dr. Hj. Mohammad Sukri bin Mustapa", status: "Aktif", jawatan: "", history: "Solid Mechanics I, Solid Mechanics II", survey: "[T1] Solid Mechanics 1, [T2] Solid Mechanics 2, [Makmal] Eng Mech Lab 3", note: "Pilihan Teras 1 & 2" },
-            { id: 2, noStaf: "752", name: "Dr. Hj. Kamarul Azhar bin Kamarudin", status: "Aktif", jawatan: "", history: "Finite Element Method, Solid Mechanics II (NEW)", survey: "[T1] Solid Mechanics 2, [T2] Finite Element Method, [Makmal] Eng Mech Lab 3", note: "Pilihan Teras Utama" },
-            { id: 3, noStaf: "779", name: "Prof. Dr. Shahruddin bin Hj. Mahzan @ Mohd Zin", status: "Aktif", jawatan: "", history: "Statics", survey: "[T1] Vibration, [T2] Finite Element Method, [Makmal] Eng Mech Lab 1", note: "Pilihan Teras Utama" },
-            { id: 4, noStaf: "850", name: "Prof. Madya Ts. Dr. Badrul-Aisham bin Md Zin", status: "Aktif", jawatan: "", history: "Control Engineering, Engineering Mechanics Laboratory III", survey: "Tiada rekod", note: "Fokus Sistem" },
-            { id: 5, noStaf: "871", name: "Prof. Madya Ts. Dr. Muhd Hafeez bin Zainulabidin", status: "Aktif", jawatan: "", history: "Finite Element Method, Vibration", survey: "[T1] Finite Element Method, [T2] Vibration, [Makmal] Eng Mech Lab 2", note: "Fokus Makmal 2" },
-            { id: 6, noStaf: "877", name: "Dr. Noormaziah binti Jafferi", status: "Aktif", jawatan: "", history: "Control Engineering, Numerical Methods (KOD LAMA), Numerical Methods (NEW)", survey: "[T1] Numerical Methods, [T2] Control Engineering, [Makmal] Eng Mech Lab 1", note: "Pilihan Teras 1" },
-            { id: 7, noStaf: "884", name: "Prof. Madya Ir. Ts. Dr. Hj. Al Emran bin Ismail", status: "Aktif", jawatan: "Ketua Jabatan / Pengurusan", history: "Engineering Mechanics Laboratory III, Finite Element Method, Solid Mechanics II (NEW), Solid Mechanics Simulation/Advanced Solid Mechanics", survey: "[T1] Solid Mechanics 1, [T2] Solid Mechanics 2, [Makmal] Eng Mech Lab 1", note: "Pilihan Teras 1" },
-            { id: 8, noStaf: "905", name: "Prof. Madya Ir. Ts. Dr. Saifulnizan bin Jamian", status: "Aktif", jawatan: "", history: "Mechanics of Machine (NEW), Solid Mechanics II (NEW), Solid Mechanics Simulation/Advanced Solid Mechanics", survey: "[T1] Finite Element Method, [T2] Numerical Methods, [Makmal] Eng Mech Lab 1", note: "Pilihan Teras Utama" },
-            { id: 9, noStaf: "926", name: "Dr. Ramhuzaini bin Abd Rahman", status: "Aktif", jawatan: "", history: "Control Engineering, Instrumentation", survey: "[T1] Control Engineering, [T2] Instrumentation, [Makmal] Eng Mech Lab 3", note: "Penyelaras" },
-            { id: 10, noStaf: "951", name: "Dr. Mohd Norihan bin Ibrahim @Tamrin", status: "Aktif", jawatan: "", history: "Dynamics", survey: "[T1] Dynamics, [T2] Statics, [Makmal] Eng Mech Lab 2", note: "Pilihan Teras 1" },
-            { id: 11, noStaf: "963", name: "En. Rosli bin Asmawi", status: "Aktif", jawatan: "", history: "Engineering Mechanics Laboratory I (New), Engineering Mechanics Laboratory II, Mechanics of Machine (NEW), Solid Mechanics I", survey: "[T1] Mechanics of Machine, [T2] Solid Mechanics 1, [Makmal] Eng Mech Lab 1", note: "Teras & Makmal 1" },
-            { id: 12, noStaf: "989", name: "Prof. Madya Ts. Dr. Zamri bin Noranai", status: "Aktif", jawatan: "", history: "Mechanics of Machine (KOD LAMA), Mechanics of Machine (NEW), Occupational Safety and Health, Solid Mechanics II (NEW)", survey: "[T1] Mechanics of Machine, [T2] Occupational Safety and Health, [Makmal] Eng Mech Lab 2", note: "Kongsi dgn Eliza (Mg 1-7)" },
-            { id: 13, noStaf: "1096", name: "Prof. Madya Dr. Zamani bin Ngali", status: "Aktif", jawatan: "", history: "Control Engineering, Modeling and Simulation/System Modelling and Simulation", survey: "[T1] Control Engineering, [T2] Instrumentation, [Makmal] Eng Mech Lab 3", note: "Pilihan Teras Utama" },
-            { id: 14, noStaf: "1098", name: "Prof. Madya Dr. Izzuddin bin Zaman @ Bujang", status: "Aktif", jawatan: "", history: "Finite Element Method, Solid Mechanics Simulation/Advanced Solid Mechanics, Vibration", survey: "[T1] Vibration, [T2] Dynamics, [Makmal] Eng Mech Lab 2", note: "Sedia Terima (Control)" },
-            { id: 15, noStaf: "1176", name: "Dr. Ts. Hanani binti Abd Wahab", status: "Aktif", jawatan: "", history: "Automation and Control Eng. In Ship, Engineering Mechanics Laboratory III, Instrumentation", survey: "[T1] Control Engineering, [T2] Instrumentation, [Makmal] Eng Mech Lab 3", note: "Pilihan Teras 2" },
-            { id: 16, noStaf: "1180", name: "Prof. Madya Ts. Dr. Mohd Halim Irwan bin Ibrahim", status: "Aktif", jawatan: "", history: "Solid Mechanics II (KOD LAMA), Solid Mechanics II (NEW)", survey: "[T1] Solid Mechanics 2, [T2] Statics, [Makmal] Eng Mech Lab 3", note: "Pilihan Teras 1" },
-            { id: 17, noStaf: "1227", name: "Ir. Dr. Sri Yulis binti M. Amin", status: "Tidak Aktif", jawatan: "Cuti Belajar", history: "Dynamics, Finite Element Method, Statics", survey: "[T1] Finite Element Method, [T2] Numerical Methods, [Makmal] Eng Mech Lab 2", note: "Cuti 2 Tahun" },
-            { id: 18, noStaf: "1283", name: "Dr. Fazimah binti Mat Noor", status: "Aktif", jawatan: "", history: "Engineering Mechanics Laboratory I (New), Solid Mechanics I, Statics", survey: "[T1] Statics, [T2] Solid Mechanics 1, [Makmal] Eng Mech Lab 1", note: "Teras & Makmal 1" },
-            { id: 19, noStaf: "1285", name: "Dr. Zaleha binti Mohamad", status: "Aktif", jawatan: "", history: "Engineering Mechanics Laboratory I (New), Solid Mechanics I, Statics", survey: "[T1] Solid Mechanics 1, [T2] Statics, [Makmal] Eng Mech Lab 1", note: "Pilihan Teras 1" },
-            { id: 20, noStaf: "1532", name: "Prof. Madya Dr. Mohd Khir bin Mohd Nor", status: "Aktif", jawatan: "", history: "Solid Mechanics I, Solid Mechanics II (KOD LAMA), Statics", survey: "[T1] Statics, [T2] Solid Mechanics 2, [Makmal] Eng Mech Lab 3", note: "Pilihan Pengkhususan Solid" },
-            { id: 21, noStaf: "1993", name: "Ir. Dr. Eliza binti M. Yusup", status: "Aktif", jawatan: "", history: "Applied Non Destructive Testing, Solid Mechanics I", survey: "[T1] Solid Mechanics 1, [T2] Statics, [Makmal] Eng Mech Lab 1", note: "Kongsi dgn Zamri (Mg 8-14)" },
-            { id: 22, noStaf: "1997", name: "Dr. Noradila binti Abdul Latif", status: "Aktif", jawatan: "", history: "Dynamics, Engineering Mechanics Laboratory I (New), Engineering Mechanics Laboratory II", survey: "[T1] Dynamics, [T2] Mechanics of Machine, [Makmal] Eng Mech Lab 1", note: "Pilihan Teras 1" },
-            { id: 23, noStaf: "2123", name: "Dr. Mohd Azhar bin Harimon", status: "Aktif", jawatan: "", history: "Dynamics, Engineering Mechanics Laboratory II", survey: "[T1] Dynamics, [T2] Statics, [Makmal] Eng Mech Lab 2", note: "Teras & Makmal 2" },
-            { id: 24, noStaf: "2124", name: "Ir. Ts. Maznan bin Ismon", status: "Aktif", jawatan: "", history: "Dynamics, Engineering Mechanics Laboratory II, Mechanics of Machine (KOD LAMA), Mechanics of Machine (NEW)", survey: "[T1] Mechanics of Machine, [T2] Dynamics, [Makmal] Eng Mech Lab 2", note: "Pilihan Teras Utama" },
-            { id: 25, noStaf: "2128", name: "Ts. Dr. Nor Azali bin Azmir", status: "Aktif", jawatan: "", history: "Acoustics and Noise Control, Engineering Mechanics Laboratory II, Vibration", survey: "[T1] Occupational Safety and Health, [T2] Vibration, [Makmal] Eng Mech Lab 2", note: "Pilihan Teras 1 & 2" },
-            { id: 26, noStaf: "2149", name: "Ts. Dr. Muhammad Faisal bin Mahmod", status: "Aktif", jawatan: "", history: "Dynamics, Engineering Mechanics Laboratory III", survey: "[T1] Dynamics, [T2] Numerical Methods, [Makmal] Eng Mech Lab 2", note: "Teras & Makmal 2" },
-            { id: 27, noStaf: "2482", name: "Dr. Shahmir Hayyan bin Sanusi", status: "Aktif", jawatan: "", history: "Acoustics and Noise Control, Engineering Mechanics Laboratory II, Vibration", survey: "[T1] Numerical Methods, [T2] Vibration, [Makmal] Eng Mech Lab 2", note: "Pilihan Teras 2" },
-            { id: 28, noStaf: "2285", name: "Dr. S Kanna A/L Subramaniyan", status: "Aktif", jawatan: "", history: "Engineering Mechanics Laboratory I (New), Finite Element Method, Solid Mechanics Simulation/Advanced Solid Mechanics", survey: "[T1] Finite Element Method, [T2] Solid Mechanics 1, [Makmal] Eng Mech Lab 1", note: "Fokus Penuh Makmal 3" },
-            { id: 29, noStaf: "2522", name: "Prof. Madya Dr. Ong Pauline", status: "Aktif", jawatan: "", history: "Data Science on Artificial Intelligence, Numerical Methods (NEW)", survey: "[T1] Numerical Methods, [T2] (Tiada Pilihan), [Makmal] Eng Mech Lab 1", note: "Pilihan Teras 1" },
-            { id: 30, noStaf: "2743", name: "Prof. Madya Ir. Dr. Low Cheng Yee", status: "Aktif", jawatan: "", history: "Numerical Methods (NEW), Robotics", survey: "[T1] Control Engineering, [T2] Numerical Methods, [Makmal] Eng Mech Lab 1", note: "Pilihan Teras 1" },
-            { id: 31, noStaf: "-", name: "Dr. Safyanu Bashir Danjuma", status: "Aktif", jawatan: "", history: "Engineering Mechanics Laboratory I (New), Engineering Mechanics Laboratory III, Finite Element Method, Instrumentation, Statics", survey: "Tiada rekod tinjauan", note: "Sila agihkan beban Teras/Makmal" }
+            { id: 1, noStaf: "400", name: "Prof. Madya Dr. Hj. Mohammad Sukri bin Mustapa", status: "Aktif", jawatan: "", history: "Solid Mechanics I, Solid Mechanics II", note: "Pilihan Teras 1 & 2" },
+            { id: 2, noStaf: "752", name: "Dr. Hj. Kamarul Azhar bin Kamarudin", status: "Aktif", jawatan: "", history: "Finite Element Method, Solid Mechanics II (NEW)", note: "Pilihan Teras Utama" },
+            { id: 3, noStaf: "779", name: "Prof. Dr. Shahruddin bin Hj. Mahzan @ Mohd Zin", status: "Aktif", jawatan: "", history: "Statics", note: "Pilihan Teras Utama" },
+            { id: 4, noStaf: "850", name: "Prof. Madya Ts. Dr. Badrul-Aisham bin Md Zin", status: "Aktif", jawatan: "", history: "Control Engineering, Engineering Mechanics Laboratory III", note: "Fokus Sistem" },
+            { id: 5, noStaf: "871", name: "Prof. Madya Ts. Dr. Muhd Hafeez bin Zainulabidin", status: "Aktif", jawatan: "", history: "Finite Element Method, Vibration", note: "Fokus Makmal 2" },
+            { id: 6, noStaf: "877", name: "Dr. Noormaziah binti Jafferi", status: "Aktif", jawatan: "", history: "Control Engineering, Numerical Methods (KOD LAMA), Numerical Methods (NEW)", note: "Pilihan Teras 1" },
+            { id: 7, noStaf: "884", name: "Prof. Madya Ir. Ts. Dr. Hj. Al Emran bin Ismail", status: "Aktif", jawatan: "Ketua Jabatan / Pengurusan", history: "Engineering Mechanics Laboratory III, Finite Element Method, Solid Mechanics II (NEW), Solid Mechanics Simulation/Advanced Solid Mechanics", note: "Pilihan Teras 1" },
+            { id: 8, noStaf: "905", name: "Prof. Madya Ir. Ts. Dr. Saifulnizan bin Jamian", status: "Aktif", jawatan: "", history: "Mechanics of Machine (NEW), Solid Mechanics II (NEW), Solid Mechanics Simulation/Advanced Solid Mechanics", note: "Pilihan Teras Utama" },
+            { id: 9, noStaf: "926", name: "Dr. Ramhuzaini bin Abd Rahman", status: "Aktif", jawatan: "", history: "Control Engineering, Instrumentation", note: "Penyelaras" },
+            { id: 10, noStaf: "951", name: "Dr. Mohd Norihan bin Ibrahim @Tamrin", status: "Aktif", jawatan: "", history: "Dynamics", note: "Pilihan Teras 1" },
+            { id: 11, noStaf: "963", name: "En. Rosli bin Asmawi", status: "Aktif", jawatan: "", history: "Engineering Mechanics Laboratory I (New), Engineering Mechanics Laboratory II, Mechanics of Machine (NEW), Solid Mechanics I", note: "Teras & Makmal 1" },
+            { id: 12, noStaf: "989", name: "Prof. Madya Ts. Dr. Zamri bin Noranai", status: "Aktif", jawatan: "", history: "Mechanics of Machine (KOD LAMA), Mechanics of Machine (NEW), Occupational Safety and Health, Solid Mechanics II (NEW)", note: "Kongsi dgn Eliza (Mg 1-7)" },
+            { id: 13, noStaf: "1096", name: "Prof. Madya Dr. Zamani bin Ngali", status: "Aktif", jawatan: "", history: "Control Engineering, Modeling and Simulation/System Modelling and Simulation", note: "Pilihan Teras Utama" },
+            { id: 14, noStaf: "1098", name: "Prof. Madya Dr. Izzuddin bin Zaman @ Bujang", status: "Aktif", jawatan: "", history: "Finite Element Method, Solid Mechanics Simulation/Advanced Solid Mechanics, Vibration", note: "Sedia Terima (Control)" },
+            { id: 15, noStaf: "1176", name: "Dr. Ts. Hanani binti Abd Wahab", status: "Aktif", jawatan: "", history: "Automation and Control Eng. In Ship, Engineering Mechanics Laboratory III, Instrumentation", note: "Pilihan Teras 2" },
+            { id: 16, noStaf: "1180", name: "Prof. Madya Ts. Dr. Mohd Halim Irwan bin Ibrahim", status: "Aktif", jawatan: "", history: "Solid Mechanics II (KOD LAMA), Solid Mechanics II (NEW)", note: "Pilihan Teras 1" },
+            { id: 17, noStaf: "1227", name: "Ir. Dr. Sri Yulis binti M. Amin", status: "Tidak Aktif", jawatan: "Cuti Belajar", history: "Dynamics, Finite Element Method, Statics", note: "Cuti 2 Tahun" },
+            { id: 18, noStaf: "1283", name: "Dr. Fazimah binti Mat Noor", status: "Aktif", jawatan: "", history: "Engineering Mechanics Laboratory I (New), Solid Mechanics I, Statics", note: "Teras & Makmal 1" },
+            { id: 19, noStaf: "1285", name: "Dr. Zaleha binti Mohamad", status: "Aktif", jawatan: "", history: "Engineering Mechanics Laboratory I (New), Solid Mechanics I, Statics", note: "Pilihan Teras 1" },
+            { id: 20, noStaf: "1532", name: "Prof. Madya Dr. Mohd Khir bin Mohd Nor", status: "Aktif", jawatan: "", history: "Solid Mechanics I, Solid Mechanics II (KOD LAMA), Statics", note: "Pilihan Pengkhususan Solid" },
+            { id: 21, noStaf: "1993", name: "Ir. Dr. Eliza binti M. Yusup", status: "Aktif", jawatan: "", history: "Applied Non Destructive Testing, Solid Mechanics I", note: "Kongsi dgn Zamri (Mg 8-14)" },
+            { id: 22, noStaf: "1997", name: "Dr. Noradila binti Abdul Latif", status: "Aktif", jawatan: "", history: "Dynamics, Engineering Mechanics Laboratory I (New), Engineering Mechanics Laboratory II", note: "Pilihan Teras 1" },
+            { id: 23, noStaf: "2123", name: "Dr. Mohd Azhar bin Harimon", status: "Aktif", jawatan: "", history: "Dynamics, Engineering Mechanics Laboratory II", note: "Teras & Makmal 2" },
+            { id: 24, noStaf: "2124", name: "Ir. Ts. Maznan bin Ismon", status: "Aktif", jawatan: "", history: "Dynamics, Engineering Mechanics Laboratory II, Mechanics of Machine (KOD LAMA), Mechanics of Machine (NEW)", note: "Pilihan Teras Utama" },
+            { id: 25, noStaf: "2128", name: "Ts. Dr. Nor Azali bin Azmir", status: "Aktif", jawatan: "", history: "Acoustics and Noise Control, Engineering Mechanics Laboratory II, Vibration", note: "Pilihan Teras 1 & 2" },
+            { id: 26, noStaf: "2149", name: "Ts. Dr. Muhammad Faisal bin Mahmod", status: "Aktif", jawatan: "", history: "Dynamics, Engineering Mechanics Laboratory III", note: "Teras & Makmal 2" },
+            { id: 27, noStaf: "2482", name: "Dr. Shahmir Hayyan bin Sanusi", status: "Aktif", jawatan: "", history: "Acoustics and Noise Control, Engineering Mechanics Laboratory II, Vibration", note: "Pilihan Teras 2" },
+            { id: 28, noStaf: "2285", name: "Dr. S Kanna A/L Subramaniyan", status: "Aktif", jawatan: "", history: "Engineering Mechanics Laboratory I (New), Finite Element Method, Solid Mechanics Simulation/Advanced Solid Mechanics", note: "Fokus Penuh Makmal 3" },
+            { id: 29, noStaf: "2522", name: "Prof. Madya Dr. Ong Pauline", status: "Aktif", jawatan: "", history: "Data Science on Artificial Intelligence, Numerical Methods (NEW)", note: "Pilihan Teras 1" },
+            { id: 30, noStaf: "2743", name: "Prof. Madya Ir. Dr. Low Cheng Yee", status: "Aktif", jawatan: "", history: "Numerical Methods (NEW), Robotics", note: "Pilihan Teras 1" },
+            { id: 31, noStaf: "-", name: "Dr. Safyanu Bashir Danjuma", status: "Aktif", jawatan: "", history: "Engineering Mechanics Laboratory I (New), Engineering Mechanics Laboratory III, Finite Element Method, Instrumentation, Statics", note: "Sila agihkan beban Teras/Makmal" }
         ];
 
         let subjectsData = [];
         let staffData = [];
 
+        window.getAppSubjects = () => subjectsData;
+        window.getAppStaff = () => staffData;
+        window.setAppData = (newSubjects, newStaff) => {
+            subjectsData = newSubjects;
+            staffData = newStaff;
+            applyLanguage(); // re-renders all tabs
+        };
+
+        window.showToastMessage = (title, desc, iconClass = 'fa-check-circle') => {
+            document.getElementById('toastTitle').innerText = title;
+            document.getElementById('toastDesc').innerText = desc;
+            document.getElementById('toastIcon').className = `fas ${iconClass} mr-3 text-2xl`;
+            
+            const toast = document.getElementById('toastNotification');
+            toast.classList.remove('translate-y-24', 'opacity-0');
+            setTimeout(() => { toast.classList.add('translate-y-24', 'opacity-0'); }, 3000);
+        };
+
         function initData() {
-            const savedSubjects = localStorage.getItem('jkm_subjects_v4');
-            const savedStaff = localStorage.getItem('jkm_staff_v4');
+            applyLanguage();
+            const savedSubjects = localStorage.getItem('jkm_subjects_v5_lang');
+            const savedStaff = localStorage.getItem('jkm_staff_v5_lang');
             
-            if (savedSubjects) {
-                subjectsData = JSON.parse(savedSubjects);
-            } else {
-                subjectsData = JSON.parse(JSON.stringify(defaultSubjectsData));
-            }
+            if (savedSubjects) { subjectsData = JSON.parse(savedSubjects); } 
+            else { subjectsData = JSON.parse(JSON.stringify(defaultSubjectsData)); }
             
-            if (savedStaff) {
-                staffData = JSON.parse(savedStaff);
+            if (savedStaff) { staffData = JSON.parse(savedStaff); } 
+            else { staffData = JSON.parse(JSON.stringify(defaultStaffData)); }
+            applyLanguage();
+        }
+
+        window.saveData = function() {
+            localStorage.setItem('jkm_subjects_v5_lang', JSON.stringify(subjectsData));
+            localStorage.setItem('jkm_staff_v5_lang', JSON.stringify(staffData));
+        }
+
+        window.forceCloudSync = function() {
+            if (window.isCloudSyncActive) {
+                window.showToastMessage(t('msg_sync_title'), t('msg_cloud_save_desc'), "fa-cloud");
+                if (typeof window.triggerCloudUpload === 'function') window.triggerCloudUpload();
             } else {
-                staffData = JSON.parse(JSON.stringify(defaultStaffData));
+                if (typeof __firebase_config === 'undefined' || __firebase_config === null) {
+                    window.showToastMessage(t('msg_offline'), t('msg_offline_desc'), "fa-laptop-house");
+                } else {
+                    window.showToastMessage("Ralat / Error", "Network error.", "fa-wifi");
+                }
             }
         }
 
-        // Simpan Data ke Local Storage setiap kali berlaku perubahan
-        function saveData() {
-            localStorage.setItem('jkm_subjects_v4', JSON.stringify(subjectsData));
-            localStorage.setItem('jkm_staff_v4', JSON.stringify(staffData));
+        function manualSave() {
+            saveData();
+            if (!window.isCloudSyncActive) {
+                window.showToastMessage(t('msg_save_title'), t('msg_save_desc'));
+            }
         }
 
-        // Padam memori dan kembali kepada asal
         function resetData() {
-            if(confirm("AWAS: Adakah anda pasti mahu RESET (padam) semua memori jadual yang telah diagihkan dan kembali kepada senarai kosong asal?")) {
-                localStorage.removeItem('jkm_subjects_v4');
-                localStorage.removeItem('jkm_staff_v4');
+            if(confirm(t('msg_reset_warn'))) {
+                localStorage.removeItem('jkm_subjects_v5_lang');
+                localStorage.removeItem('jkm_staff_v5_lang');
                 location.reload();
             }
         }
 
-        // ==========================================
-        // FUNGSI EKSPORT & IMPORT (UNTUK PINDAH LAPTOP)
-        // ==========================================
         function exportData() {
-            const data = {
-                subjects: subjectsData,
-                staff: staffData
-            };
+            const data = { subjects: subjectsData, staff: staffData };
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
             const downloadAnchorNode = document.createElement('a');
             downloadAnchorNode.setAttribute("href", dataStr);
@@ -501,46 +580,35 @@
                     try {
                         const importedData = JSON.parse(e.target.result);
                         if (importedData.subjects && importedData.staff) {
-                            if(confirm("Amaran: Tindakan ini akan memadam data di skrin anda sekarang dan menggantikannya dengan fail yang diimport. Teruskan?")) {
+                            if(confirm(t('msg_import_warn'))) {
                                 subjectsData = importedData.subjects;
                                 staffData = importedData.staff;
                                 saveData();
-                                alert("Data berjaya diimport! Sistem akan dimuat semula.");
+                                alert("Berjaya / Success!");
                                 location.reload();
                             }
-                        } else {
-                            alert("Format fail tidak sah. Sila pastikan anda memuat naik fail backup (.json) yang sah dari sistem ini.");
-                        }
-                    } catch (err) {
-                        alert("Ralat semasa membaca fail data. Sila cuba lagi.");
-                    }
+                        } else { alert("Format fail tidak sah / Invalid file format."); }
+                    } catch (err) { alert("Ralat / Error reading file."); }
                 };
                 reader.readAsText(file);
             }
-            // Reset input so the same file can be selected again if needed
             event.target.value = '';
         }
 
-        // Panggil initData() semasa mula-mula load skrip
         initData();
 
         // ------------------ TAB NAVIGATION ------------------
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => {
-                el.classList.add('hidden');
-                el.classList.remove('block');
+                el.classList.add('hidden'); el.classList.remove('block');
             });
-            
             document.querySelectorAll('.tab-btn').forEach(el => {
                 el.classList.remove('border-blue-500', 'text-blue-600');
                 el.classList.add('border-transparent', 'text-gray-500');
             });
 
             const activeTab = document.getElementById(tabId);
-            if(activeTab) {
-                activeTab.classList.remove('hidden');
-                activeTab.classList.add('block');
-            }
+            if(activeTab) { activeTab.classList.remove('hidden'); activeTab.classList.add('block'); }
 
             const activeBtn = document.getElementById('btn-' + tabId);
             if(activeBtn) {
@@ -555,28 +623,22 @@
             if(tabId === 'tab-laporan-staf') renderStaffReportTab();
         }
 
-        // ------------------ TAB 1: SENARAI SUBJEK (SUBJECTS) ------------------
+        // ------------------ TAB 1: PENGURUSAN SUBJEK ------------------
         function updateSubjectTarget(index, value) {
             subjectsData[index].targetSec = parseInt(value) || 0;
-            saveData();
-            renderSubjectsTab();
-            if(!document.getElementById('tab-agihan').classList.contains('hidden')) {
-                renderAssignmentTab();
-            }
+            saveData(); renderSubjectsTab();
+            if(!document.getElementById('tab-agihan').classList.contains('hidden')) renderAssignmentTab();
         }
 
         function openSubjectModal(id = null) {
-            document.getElementById('subjectModalTitle').innerText = id ? "Edit Subjek" : "Tambah Subjek Baru";
+            document.getElementById('subjectModalTitle').innerText = id ? t('mod_sub_edit') : t('mod_sub_add');
             document.getElementById('subjectModal').classList.remove('hidden');
-            // Reset form for now (can expand to edit mode later)
             document.getElementById('subKod').value = "";
             document.getElementById('subNama').value = "";
             document.getElementById('subTarget').value = "1";
         }
 
-        function closeSubjectModal() {
-            document.getElementById('subjectModal').classList.add('hidden');
-        }
+        function closeSubjectModal() { document.getElementById('subjectModal').classList.add('hidden'); }
 
         function saveSubject(e) {
             e.preventDefault();
@@ -587,27 +649,17 @@
             const target = parseInt(document.getElementById('subTarget').value);
             
             const newId = subjectsData.length > 0 ? Math.max(...subjectsData.map(s => s.id)) + 1 : 1;
+            subjectsData.push({ id: newId, year: tahun, code: kod, name: nama, type: kat, targetSec: target, assigned: [] });
             
-            subjectsData.push({
-                id: newId, year: tahun, code: kod, name: nama, type: kat, targetSec: target, assigned: []
-            });
-            
-            closeSubjectModal();
-            saveData();
-            renderSubjectsTab();
-            if(!document.getElementById('tab-agihan').classList.contains('hidden')) {
-                renderAssignmentTab();
-            }
+            closeSubjectModal(); saveData(); renderSubjectsTab();
+            if(!document.getElementById('tab-agihan').classList.contains('hidden')) renderAssignmentTab();
         }
 
         function deleteSubject(id) {
-            if (confirm("Pasti mahu padam subjek ini? Semua agihan staf untuk subjek ini akan terpadam.")) {
+            if (confirm(t('msg_del_sub'))) {
                 subjectsData = subjectsData.filter(s => s.id !== id);
-                saveData();
-                renderSubjectsTab();
-                if(!document.getElementById('tab-agihan').classList.contains('hidden')) {
-                    renderAssignmentTab();
-                }
+                saveData(); renderSubjectsTab();
+                if(!document.getElementById('tab-agihan').classList.contains('hidden')) renderAssignmentTab();
             }
         }
 
@@ -616,9 +668,9 @@
             tbody.innerHTML = '';
             
             subjectsData.forEach((sub, index) => {
-                // Calculate assigned sections
                 let currentAssigned = 0;
-                sub.assigned.forEach(a => currentAssigned += a.sections);
+                sub.assigned.forEach(a => currentAssigned += (a.sections / Math.max(1, a.share)));
+                currentAssigned = Math.ceil(currentAssigned);
                 
                 let targetClass = "text-gray-900";
                 if(currentAssigned < sub.targetSec) targetClass = "text-red-600 font-bold";
@@ -641,11 +693,11 @@
                         <td class="px-6 py-4 whitespace-nowrap text-center">
                             <div class="flex flex-col items-center justify-center">
                                 <input type="number" min="0" max="20" value="${sub.targetSec}" onchange="updateSubjectTarget(${index}, this.value)" class="w-16 text-center border-b-2 border-gray-300 focus:border-blue-500 focus:outline-none text-lg font-bold text-blue-600 pb-1">
-                                <span class="text-xs mt-1 ${targetClass}">Diisi: ${currentAssigned} / ${sub.targetSec}</span>
+                                <span class="text-xs mt-1 ${targetClass}">${t('txt_filled')}: ${currentAssigned} / ${sub.targetSec}</span>
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-center no-print">
-                            <button onclick="deleteSubject(${sub.id})" class="text-red-500 hover:text-red-700" title="Padam Subjek"><i class="fas fa-trash"></i></button>
+                            <button onclick="deleteSubject(${sub.id})" class="text-red-500 hover:text-red-700" title="Delete"><i class="fas fa-trash"></i></button>
                         </td>
                     </tr>
                 `;
@@ -656,34 +708,24 @@
         // ------------------ TAB 2: AGIHAN TUGAS & BEBAN ------------------
         function addStaffRow(subjectIndex) {
             subjectsData[subjectIndex].assigned.push({ staffId: "", sections: 1, share: 1 });
-            saveData();
-            renderAssignmentTab();
+            saveData(); renderAssignmentTab();
         }
 
         function removeStaffRow(subjectIndex, assignmentIndex) {
             subjectsData[subjectIndex].assigned.splice(assignmentIndex, 1);
-            saveData();
-            renderAssignmentTab();
+            saveData(); renderAssignmentTab();
         }
 
         function updateStaffAssignment(subjectIndex, assignmentIndex, field, value) {
-            if (field === 'staffId') {
-                subjectsData[subjectIndex].assigned[assignmentIndex][field] = value === "" ? "" : parseInt(value);
-            } else {
-                subjectsData[subjectIndex].assigned[assignmentIndex][field] = parseInt(value) || 1;
-            }
-            saveData();
-            renderAssignmentTab();
+            if (field === 'staffId') { subjectsData[subjectIndex].assigned[assignmentIndex][field] = value === "" ? "" : parseInt(value); } 
+            else { subjectsData[subjectIndex].assigned[assignmentIndex][field] = parseInt(value) || 1; }
+            saveData(); renderAssignmentTab();
         }
 
-        // Pengiraan mata beban
         function getLoadMultiplier(subjectCode, type, subjectName = "") {
-            // Pengecualian Khas untuk FEM (Beban Mata Berasingan)
             if (subjectName.includes("Finite Element Method (KULIAH)")) return 6;
             if (subjectName.includes("Finite Element Method (MAKMAL)")) return 4;
-
-            if (type === 'Makmal') return 2; // Makmal biasanya 2 mata per seksyen
-            
+            if (type === 'Makmal') return 2;
             const match = subjectCode.match(/[A-Z]{3}\s*\d{4}(\d)/);
             if (match) {
                 const lastDigit = parseInt(match[1]);
@@ -691,47 +733,32 @@
                 if (lastDigit === 2) return 6;
                 if (lastDigit === 1) return 2;
             }
-            return 10; // Default jika gagal baca code
+            return 10;
         }
 
         function getStaffOptions(assignedStaffId, subjectName) {
-            let options = `<option value="">-- Pilih Staf --</option>`;
-            
-            // Normalize nama subjek supaya sistem kenal sejarah staf walaupun dipecahkan kepada Kuliah/Makmal
+            let options = `<option value="">${t('txt_choose_staff')}</option>`;
             let baseSubjectName = subjectName.replace(" (KULIAH)", "").replace(" (MAKMAL)", "");
             
-            // 1. Prioritize staff who have history with this subject
             const recommendedStaff = staffData.filter(s => s.status === 'Aktif' && s.history.includes(baseSubjectName));
             const otherActiveStaff = staffData.filter(s => s.status === 'Aktif' && !s.history.includes(baseSubjectName));
             const inactiveStaff = staffData.filter(s => s.status !== 'Aktif');
 
             if (recommendedStaff.length > 0) {
-                options += `<optgroup label="⭐ Disyorkan (Pernah Ajar)">`;
-                recommendedStaff.forEach(s => {
-                    const sel = (s.id === assignedStaffId) ? 'selected' : '';
-                    options += `<option value="${s.id}" ${sel}>${s.name}</option>`;
-                });
+                options += `<optgroup label="${t('txt_recom')}">`;
+                recommendedStaff.forEach(s => { options += `<option value="${s.id}" ${s.id === assignedStaffId ? 'selected' : ''}>${s.name}</option>`; });
                 options += `</optgroup>`;
             }
-
             if (otherActiveStaff.length > 0) {
-                options += `<optgroup label="Staf Aktif Lain">`;
-                otherActiveStaff.forEach(s => {
-                    const sel = (s.id === assignedStaffId) ? 'selected' : '';
-                    options += `<option value="${s.id}" ${sel}>${s.name}</option>`;
-                });
+                options += `<optgroup label="${t('txt_other_active')}">`;
+                otherActiveStaff.forEach(s => { options += `<option value="${s.id}" ${s.id === assignedStaffId ? 'selected' : ''}>${s.name}</option>`; });
                 options += `</optgroup>`;
             }
-
             if (inactiveStaff.length > 0) {
-                options += `<optgroup label="Tidak Aktif / Cuti">`;
-                inactiveStaff.forEach(s => {
-                    const sel = (s.id === assignedStaffId) ? 'selected' : '';
-                    options += `<option value="${s.id}" ${sel}>[TIDAK AKTIF] ${s.name}</option>`;
-                });
+                options += `<optgroup label="${t('txt_inactive_staff')}">`;
+                inactiveStaff.forEach(s => { options += `<option value="${s.id}" ${s.id === assignedStaffId ? 'selected' : ''}>[${t('txt_inactive').toUpperCase()}] ${s.name}</option>`; });
                 options += `</optgroup>`;
             }
-
             return options;
         }
 
@@ -741,22 +768,20 @@
             
             subjectsData.forEach((sub, sIndex) => {
                 let currentAssigned = 0;
-                sub.assigned.forEach(a => {
-                    currentAssigned += (a.sections / Math.max(1, a.share));
-                });
+                sub.assigned.forEach(a => { currentAssigned += (a.sections / Math.max(1, a.share)); });
                 currentAssigned = Math.ceil(currentAssigned);
                 
                 let targetStatusHtml = "";
                 let cardBorder = "border-gray-200";
                 
                 if (currentAssigned < sub.targetSec) {
-                    targetStatusHtml = `<span class="text-xs font-bold text-red-600 bg-red-100 px-2 py-1 rounded-md ml-2"><i class="fas fa-exclamation-triangle"></i> Kurang ${sub.targetSec - currentAssigned} Seksyen</span>`;
+                    targetStatusHtml = `<span class="text-xs font-bold text-red-600 bg-red-100 px-2 py-1 rounded-md ml-2"><i class="fas fa-exclamation-triangle"></i> ${t('txt_short')} ${sub.targetSec - currentAssigned} ${t('txt_sec')}</span>`;
                     cardBorder = "border-red-300 border-l-4";
                 } else if (currentAssigned > sub.targetSec) {
-                    targetStatusHtml = `<span class="text-xs font-bold text-orange-600 bg-orange-100 px-2 py-1 rounded-md ml-2"><i class="fas fa-exclamation-triangle"></i> Terlebih ${currentAssigned - sub.targetSec} Seksyen</span>`;
+                    targetStatusHtml = `<span class="text-xs font-bold text-orange-600 bg-orange-100 px-2 py-1 rounded-md ml-2"><i class="fas fa-exclamation-triangle"></i> ${t('txt_over')} ${currentAssigned - sub.targetSec} ${t('txt_sec')}</span>`;
                     cardBorder = "border-orange-300 border-l-4";
                 } else {
-                    targetStatusHtml = `<span class="text-xs font-bold text-green-600 bg-green-100 px-2 py-1 rounded-md ml-2"><i class="fas fa-check-circle"></i> Lengkap</span>`;
+                    targetStatusHtml = `<span class="text-xs font-bold text-green-600 bg-green-100 px-2 py-1 rounded-md ml-2"><i class="fas fa-check-circle"></i> ${t('txt_complete')}</span>`;
                     cardBorder = "border-green-400 border-l-4";
                 }
 
@@ -771,21 +796,21 @@
                             </div>
                             <div class="w-full sm:w-1/3 flex items-center gap-2 justify-end">
                                 <div class="flex items-center gap-1 bg-white border border-gray-300 rounded-md p-1 shadow-sm">
-                                    <span class="text-xs text-gray-500 ml-1 font-bold">Seksyen:</span>
+                                    <span class="text-xs text-gray-500 ml-1 font-bold">${t('txt_sec')}:</span>
                                     <input type="number" min="1" max="15" value="${assign.sections}" onchange="updateStaffAssignment(${sIndex}, ${aIndex}, 'sections', this.value)" class="w-12 text-center focus:outline-none text-sm font-bold text-blue-600">
                                 </div>
                                 <div class="flex items-center gap-1 bg-white border border-gray-300 rounded-md p-1 shadow-sm">
-                                    <span class="text-xs text-gray-500 ml-1">Kongsi ÷</span>
+                                    <span class="text-xs text-gray-500 ml-1">${t('txt_share')} ÷</span>
                                     <input type="number" min="1" max="5" value="${assign.share}" onchange="updateStaffAssignment(${sIndex}, ${aIndex}, 'share', this.value)" class="w-10 text-center focus:outline-none text-sm font-medium">
                                 </div>
-                                <button onclick="removeStaffRow(${sIndex}, ${aIndex})" class="text-red-400 hover:text-red-600 p-1 bg-white rounded border border-gray-200 shadow-sm" title="Buang Pensyarah"><i class="fas fa-times"></i></button>
+                                <button onclick="removeStaffRow(${sIndex}, ${aIndex})" class="text-red-400 hover:text-red-600 p-1 bg-white rounded border border-gray-200 shadow-sm" title="Remove"><i class="fas fa-times"></i></button>
                             </div>
                         </div>
                     `;
                 });
 
                 if(sub.assigned.length === 0) {
-                    assignmentRows = `<div class="text-center py-4 text-sm text-gray-400 italic">Belum ada pensyarah ditugaskan untuk subjek ini. Klik 'Tambah Pensyarah' di bawah.</div>`;
+                    assignmentRows = `<div class="text-center py-4 text-sm text-gray-400 italic">${t('txt_no_assign')}</div>`;
                 }
 
                 let badgeColor = sub.type === 'Makmal' ? 'bg-purple-100 text-purple-700' : (sub.type === 'Elektif' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-700');
@@ -799,14 +824,14 @@
                                 ${targetStatusHtml}
                             </div>
                             <div class="text-xs font-semibold text-gray-500 bg-white px-2 py-1 rounded border border-gray-200 shadow-sm">
-                                Beban Sasaran: ${sub.targetSec} Seksyen
+                                ${t('txt_target_load')}: ${sub.targetSec} ${t('txt_sec')}
                             </div>
                         </div>
                         <div class="p-4 space-y-3">
                             ${assignmentRows}
                             <div class="mt-2 text-right">
                                 <button onclick="addStaffRow(${sIndex})" class="text-sm text-blue-600 hover:text-blue-800 font-medium inline-flex items-center px-3 py-1.5 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors">
-                                    <i class="fas fa-user-plus mr-1.5"></i> Tambah Pensyarah
+                                    <i class="fas fa-user-plus mr-1.5"></i> ${t('txt_add_lecturer')}
                                 </button>
                             </div>
                         </div>
@@ -819,26 +844,22 @@
         // ------------------ TAB 3: PROFIL PENSYARAH ------------------
         function toggleAdminMode() {
             isAdminMode = !isAdminMode;
+            document.querySelectorAll('.admin-col').forEach(el => isAdminMode ? el.classList.remove('hidden') : el.classList.add('hidden'));
+            
             const icon = document.getElementById('adminToggleIcon');
             const text = document.getElementById('adminToggleText');
-            
-            document.querySelectorAll('.admin-col').forEach(el => {
-                if(isAdminMode) el.classList.remove('hidden');
-                else el.classList.add('hidden');
-            });
-
             if (isAdminMode) {
                 icon.classList.replace('text-gray-500', 'text-green-500');
-                text.innerText = 'Mod Admin (Buka)';
+                text.innerText = t('txt_admin_on');
             } else {
                 icon.classList.replace('text-green-500', 'text-gray-500');
-                text.innerText = 'Mod Admin (Tutup)';
+                text.innerText = t('txt_admin_off');
             }
         }
 
         function openStaffModal(id = null) {
             editingStaffId = id;
-            document.getElementById('staffModalTitle').innerText = id ? "Edit Maklumat Staf" : "Tambah Staf Baru";
+            document.getElementById('staffModalTitle').innerText = id ? t('mod_staff_edit') : t('mod_staff_add');
             
             if (id) {
                 const staff = staffData.find(s => s.id === id);
@@ -847,24 +868,17 @@
                 document.getElementById('formStatus').value = staff.status || "Aktif";
                 document.getElementById('formJawatan').value = staff.jawatan || "";
                 document.getElementById('formHistory').value = staff.history;
-                document.getElementById('formSurvey').value = staff.survey;
-                document.getElementById('formNote').value = staff.note;
             } else {
                 document.getElementById('formNoStaf').value = "";
                 document.getElementById('formName').value = "";
                 document.getElementById('formStatus').value = "Aktif";
                 document.getElementById('formJawatan').value = "";
                 document.getElementById('formHistory').value = "";
-                document.getElementById('formSurvey').value = "";
-                document.getElementById('formNote').value = "";
             }
             document.getElementById('staffModal').classList.remove('hidden');
         }
 
-        function closeStaffModal() {
-            document.getElementById('staffModal').classList.add('hidden');
-            editingStaffId = null;
-        }
+        function closeStaffModal() { document.getElementById('staffModal').classList.add('hidden'); editingStaffId = null; }
 
         function saveStaff(e) {
             e.preventDefault();
@@ -873,40 +887,23 @@
             const status = document.getElementById('formStatus').value;
             const jawatan = document.getElementById('formJawatan').value;
             const history = document.getElementById('formHistory').value;
-            const survey = document.getElementById('formSurvey').value;
-            const note = document.getElementById('formNote').value;
 
             if (editingStaffId) {
                 const index = staffData.findIndex(s => s.id === editingStaffId);
-                staffData[index].noStaf = noStaf;
-                staffData[index].name = name;
-                staffData[index].status = status;
-                staffData[index].jawatan = jawatan;
-                staffData[index].history = history;
-                staffData[index].survey = survey;
-                staffData[index].note = note;
+                staffData[index] = { ...staffData[index], noStaf, name, status, jawatan, history };
             } else {
                 const newId = staffData.length > 0 ? Math.max(...staffData.map(s => s.id)) + 1 : 1;
-                staffData.push({ id: newId, noStaf, name, status, jawatan, history, survey, note });
+                staffData.push({ id: newId, noStaf, name, status, jawatan, history, note: "" });
             }
-            
-            closeStaffModal();
-            saveData();
-            renderStaffListTab();
+            closeStaffModal(); saveData(); renderStaffListTab();
             if(!document.getElementById('tab-agihan').classList.contains('hidden')) renderAssignmentTab();
         }
 
         function deleteStaff(id) {
-            if (confirm("Adakah anda pasti mahu memadam staf ini dari jadual?")) {
+            if (confirm(t('msg_del_staff'))) {
                 staffData = staffData.filter(s => s.id !== id);
-                
-                // Remove assignments
-                subjectsData.forEach(sub => {
-                    sub.assigned = sub.assigned.filter(a => a.staffId !== id);
-                });
-                
-                saveData();
-                renderStaffListTab();
+                subjectsData.forEach(sub => sub.assigned = sub.assigned.filter(a => a.staffId !== id));
+                saveData(); renderStaffListTab();
                 if(!document.getElementById('tab-agihan').classList.contains('hidden')) renderAssignmentTab();
             }
         }
@@ -930,43 +927,36 @@
             
             staffData.forEach((staff, index) => {
                 const totalLoad = calculateStaffLoad(staff.id);
-                
-                // --- KIRAAN PECAHAN BEBAN (BREAKDOWN) ---
                 let breakdownHtml = '';
+                
                 subjectsData.forEach(sub => {
                     sub.assigned.forEach(a => {
                         if (a.staffId === staff.id && a.sections > 0) {
                             const multiplier = getLoadMultiplier(sub.code, sub.type, sub.name);
                             const pts = (multiplier * a.sections) / Math.max(1, a.share);
-                            let shareText = a.share > 1 ? ` (Kongsi ${a.share})` : '';
+                            let shareText = a.share > 1 ? ` (${t('txt_share')} ${a.share})` : '';
                             breakdownHtml += `
                                 <div class="text-xs text-gray-700 mt-1.5 text-left bg-gray-50 p-1.5 rounded border border-gray-200 shadow-sm">
                                     <span class="font-bold text-blue-700">${sub.code}</span><br>
-                                    ${a.sections} Seksyen${shareText} = <span class="font-bold text-gray-900">${pts.toFixed(1)} mata</span>
+                                    ${a.sections} ${t('txt_sec')}${shareText} = <span class="font-bold text-gray-900">${pts.toFixed(1)} ${t('txt_points')}</span>
                                 </div>
                             `;
                         }
                     });
                 });
                 
-                if (breakdownHtml === '') {
-                    breakdownHtml = `<div class="text-xs text-gray-400 mt-2 italic text-center">Belum ada agihan tugas</div>`;
-                }
+                if (breakdownHtml === '') breakdownHtml = `<div class="text-xs text-gray-400 mt-2 italic text-center">${t('txt_no_assign')}</div>`;
                 
-                let badgeClass = 'bg-green-100 text-green-800 border-green-200';
-                if (totalLoad >= 30) badgeClass = 'bg-red-100 text-red-800 border-red-200'; 
-                else if (totalLoad >= 20) badgeClass = 'bg-orange-100 text-orange-800 border-orange-200'; 
-                else if (totalLoad >= 10) badgeClass = 'bg-blue-100 text-blue-800 border-blue-200'; 
-                else if (totalLoad === 0) badgeClass = 'bg-gray-100 text-gray-800 border-gray-200'; 
-
+                let badgeClass = totalLoad >= 30 ? 'bg-red-100 text-red-800 border-red-200' : (totalLoad >= 20 ? 'bg-orange-100 text-orange-800 border-orange-200' : (totalLoad >= 10 ? 'bg-blue-100 text-blue-800 border-blue-200' : 'bg-gray-100 text-gray-800 border-gray-200'));
+                
+                const statusStr = staff.status === 'Tidak Aktif' ? t('txt_inactive') : t('txt_active');
                 const statusBadge = staff.status === 'Tidak Aktif' 
-                    ? `<span class="px-2 py-1 inline-flex text-xs leading-4 font-semibold rounded-full bg-red-100 text-red-800">Tidak Aktif</span>`
-                    : `<span class="px-2 py-1 inline-flex text-xs leading-4 font-semibold rounded-full bg-green-100 text-green-800">Aktif</span>`;
+                    ? `<span class="px-2 py-1 inline-flex text-xs leading-4 font-semibold rounded-full bg-red-100 text-red-800">${statusStr}</span>`
+                    : `<span class="px-2 py-1 inline-flex text-xs leading-4 font-semibold rounded-full bg-green-100 text-green-800">${statusStr}</span>`;
                 
                 const jawatanHtml = staff.jawatan ? `<span class="px-2 py-0.5 rounded text-xs font-bold bg-purple-100 text-purple-700 border border-purple-200 inline-block mt-1">${staff.jawatan}</span>` : `<span class="text-gray-400">-</span>`;
 
-                let rowClass = "hover:bg-blue-50 transition-colors";
-                if(staff.status === 'Tidak Aktif') rowClass = "bg-gray-50 opacity-75";
+                let rowClass = staff.status === 'Tidak Aktif' ? "bg-gray-50 opacity-75" : "hover:bg-blue-50 transition-colors";
 
                 const row = `
                     <tr class="${rowClass}">
@@ -979,7 +969,7 @@
                         <td class="px-4 py-4 whitespace-normal align-top">
                             <div class="flex flex-col items-center">
                                 <span class="px-3 py-1 inline-flex text-sm leading-5 font-bold rounded-full border ${badgeClass} mb-1 shadow-sm">
-                                    Jumlah: ${totalLoad} Mata
+                                    ${t('txt_total')}: ${totalLoad} ${t('txt_points')}
                                 </span>
                                 <div class="w-full min-w-[180px]">
                                     ${breakdownHtml}
@@ -988,7 +978,7 @@
                         </td>
                         <td class="px-4 py-4 whitespace-nowrap text-center admin-col ${isAdminMode ? '' : 'hidden'}">
                             <button onclick="openStaffModal(${staff.id})" class="text-blue-600 hover:text-blue-900 mx-1" title="Edit"><i class="fas fa-edit"></i></button>
-                            <button onclick="deleteStaff(${staff.id})" class="text-red-600 hover:text-red-900 mx-1" title="Padam"><i class="fas fa-trash"></i></button>
+                            <button onclick="deleteStaff(${staff.id})" class="text-red-600 hover:text-red-900 mx-1" title="Delete"><i class="fas fa-trash"></i></button>
                         </td>
                     </tr>
                 `;
@@ -996,199 +986,157 @@
             });
         }
 
-        // ------------------ TAB 4: LAPORAN CETAKAN RASMI ------------------
+        // ------------------ TAB 4: LAPORAN SUBJEK ------------------
         function renderPrintView() {
             const filter = document.getElementById('reportFilter');
-            // Baca nilai yang dipilih SEBELUM senarai diperbaharui
             const filterVal = filter.value || "ALL"; 
             
-            // Perbaharui senarai dropdown (jika ada penambahan subjek baru di Tab 1)
-            filter.innerHTML = `<option value="ALL">-- Tunjuk Semua Subjek --</option>`;
-            subjectsData.forEach(sub => {
-                filter.innerHTML += `<option value="${sub.id}">${sub.code} - ${sub.name}</option>`;
-            });
-
-            // Kekalkan nilai yang telah dipilih oleh pengguna
-            filter.value = filterVal;
+            // Hanya bina semula dropdown jika ia belum dibina (mengelakkan konflik onchange)
+            if (filter.options.length <= 1 || filter.options.length !== subjectsData.length + 1) {
+                filter.innerHTML = `<option value="ALL">${t('txt_all_sub')}</option>`;
+                subjectsData.forEach(sub => { filter.innerHTML += `<option value="${sub.id}">${sub.code} - ${sub.name}</option>`; });
+                filter.value = filterVal;
+            }
 
             const tbody = document.getElementById('printListBody');
             tbody.innerHTML = '';
 
-            let dataToPrint = subjectsData;
-            if (filterVal !== "ALL") {
-                dataToPrint = subjectsData.filter(s => s.id === parseInt(filterVal));
-            }
-
+            // Guna == (loose equality) untuk memastikan ID jenis 'string' dan 'number' kedua-duanya dijumpai
+            let dataToPrint = filterVal !== "ALL" ? subjectsData.filter(s => s.id == filterVal) : subjectsData;
             let mainIndex = 1;
 
             dataToPrint.forEach((sub) => {
-                // Determine K, T, A based on code (simplified logic based on typical UTHM codes)
-                let k=2, t=0, a=0;
-                const lastDigitMatch = sub.code.trim().slice(-1);
-                if (lastDigitMatch === '3') { k=2; t=2; a=0; } // e.g. 10203 = 2k,2t
-                else if (lastDigitMatch === '2') { k=2; t=0; a=0; } // e.g. 21302 = 2k
-                else if (lastDigitMatch === '1') { k=0; t=0; a=2; } // Makmal
-                if(sub.type === 'Makmal') { k=0; t=0; a=2; } // Force makmal to a=2
+                try {
+                    let valK=2, valT=0, valA=0;
+                    const safeCode = (sub.code || "").toString().trim();
+                    const safeName = (sub.name || "").toString();
+                    const lastDigitMatch = safeCode.slice(-1);
+                    
+                    if (lastDigitMatch === '3') { valK=2; valT=2; valA=0; } 
+                    else if (lastDigitMatch === '2') { valK=2; valT=0; valA=0; } 
+                    else if (lastDigitMatch === '1') { valK=0; valT=0; valA=2; } 
+                    if(sub.type === 'Makmal') { valK=0; valT=0; valA=2; } 
 
-                // Override khas untuk Finite Element Method (Kuliah vs Makmal)
-                if (sub.name.includes("Finite Element Method (KULIAH)")) { k=2; t=0; a=0; }
-                if (sub.name.includes("Finite Element Method (MAKMAL)")) { k=0; t=0; a=2; }
+                    if (safeName.includes("Finite Element Method (KULIAH)")) { valK=2; valT=0; valA=0; }
+                    if (safeName.includes("Finite Element Method (MAKMAL)")) { valK=0; valT=0; valA=2; }
 
-                let validAssignments = sub.assigned.filter(a => a.staffId !== "" && a.sections > 0);
-                
-                if (validAssignments.length === 0) {
-                    // Empty row
-                    tbody.innerHTML += `
-                        <tr>
-                            <td class="border border-gray-300 px-2 py-1 text-center">${mainIndex++}</td>
-                            <td class="border border-gray-300 px-2 py-1 font-semibold text-center">${sub.code}</td>
-                            <td class="border border-gray-300 px-3 py-1 font-semibold">${sub.name}</td>
-                            <td class="border border-gray-300 px-2 py-1 text-center">JKM (S)</td>
-                            <td class="border border-gray-300 px-2 py-1 text-center">-</td>
-                            <td class="border border-gray-300 px-3 py-1 text-red-500 font-bold italic">BELUM DIAGIH</td>
-                            <td class="border border-gray-300 px-3 py-1 text-center">-</td>
-                            <td class="border border-gray-300 px-2 py-1 text-center">${k}</td>
-                            <td class="border border-gray-300 px-2 py-1 text-center">${t}</td>
-                            <td class="border border-gray-300 px-2 py-1 text-center">${a}</td>
-                        </tr>
-                    `;
-                } else {
-                    // Kumpulan nama bagi pensyarah yang berkongsi seksyen
-                    let groupedAssignments = [];
-                    let currentShareGroup = null;
-
-                    validAssignments.forEach(assign => {
-                        const stf = staffData.find(s => s.id === assign.staffId);
-                        const name = stf ? stf.name : "STAF TIDAK JUMPA";
-
-                        if (assign.share > 1) {
-                            if (currentShareGroup && currentShareGroup.names.length < currentShareGroup.expectedShare) {
-                                currentShareGroup.names.push(name);
-                                if (currentShareGroup.names.length === currentShareGroup.expectedShare) {
-                                    currentShareGroup = null; 
-                                }
-                            } else {
-                                let newGroup = { names: [name], sections: assign.sections, expectedShare: assign.share };
-                                groupedAssignments.push(newGroup);
-                                currentShareGroup = newGroup;
-                            }
-                        } else {
-                            groupedAssignments.push({ names: [name], sections: assign.sections, expectedShare: 1 });
-                        }
-                    });
-
-                    let currentSecStart = 1;
-                    let processedList = groupedAssignments.map(group => {
-                        let secStr = "-";
-                        if (group.sections === 1) {
-                            secStr = `${currentSecStart}`;
-                        } else if (group.sections > 1) {
-                            secStr = `${currentSecStart} - ${currentSecStart + group.sections - 1}`;
-                        }
-                        currentSecStart += group.sections;
-
-                        // Jika kongsi, gabungkan nama dengan label yang cantik
-                        let nameStr = group.names.join("<br><span class='text-xs text-blue-600 print:text-gray-500 font-bold italic my-1 inline-block'><i class='fas fa-link'></i> Berkongsi dengan:</span><br>");
-
-                        return { name: nameStr, secStr: secStr };
-                    });
-
-                    let penyelaras = groupedAssignments[0].names[0]; // Penyelaras = Orang pertama dalam kumpulan pertama
-
-                    // Render First Row with Rowspan for Subject Info
-                    let rowsHtml = `
-                        <tr>
-                            <td class="border border-gray-300 px-2 py-1 text-center" rowspan="${processedList.length}">${mainIndex++}</td>
-                            <td class="border border-gray-300 px-2 py-1 font-semibold text-center" rowspan="${processedList.length}">${sub.code}</td>
-                            <td class="border border-gray-300 px-3 py-1 font-semibold" rowspan="${processedList.length}">${sub.name}</td>
-                            <td class="border border-gray-300 px-2 py-1 text-center" rowspan="${processedList.length}">JKM (S)</td>
-                            <td class="border border-gray-300 px-2 py-1 text-center">${processedList[0].secStr}</td>
-                            <td class="border border-gray-300 px-3 py-1">${processedList[0].name}</td>
-                            <td class="border border-gray-300 px-3 py-1" rowspan="${processedList.length}">${penyelaras}</td>
-                            <td class="border border-gray-300 px-2 py-1 text-center" rowspan="${processedList.length}">${k}</td>
-                            <td class="border border-gray-300 px-2 py-1 text-center" rowspan="${processedList.length}">${t}</td>
-                            <td class="border border-gray-300 px-2 py-1 text-center" rowspan="${processedList.length}">${a}</td>
-                        </tr>
-                    `;
-
-                    // Render subsequent rows just for section and staff name
-                    for(let i = 1; i < processedList.length; i++) {
-                        rowsHtml += `
+                    let validAssignments = sub.assigned ? sub.assigned.filter(a => a.staffId !== "" && parseInt(a.sections) > 0) : [];
+                    
+                    if (validAssignments.length === 0) {
+                        tbody.innerHTML += `
                             <tr>
-                                <td class="border border-gray-300 px-2 py-1 text-center">${processedList[i].secStr}</td>
-                                <td class="border border-gray-300 px-3 py-1">${processedList[i].name}</td>
+                                <td class="border border-gray-300 px-2 py-1 text-center">${mainIndex++}</td>
+                                <td class="border border-gray-300 px-2 py-1 font-semibold text-center">${safeCode}</td>
+                                <td class="border border-gray-300 px-3 py-1 font-semibold">${safeName}</td>
+                                <td class="border border-gray-300 px-2 py-1 text-center">JKM (S)</td>
+                                <td class="border border-gray-300 px-2 py-1 text-center">-</td>
+                                <td class="border border-gray-300 px-3 py-1 text-red-500 font-bold italic">${t('txt_unassigned')}</td>
+                                <td class="border border-gray-300 px-3 py-1 text-center">-</td>
+                                <td class="border border-gray-300 px-2 py-1 text-center">${valK}</td>
+                                <td class="border border-gray-300 px-2 py-1 text-center">${valT}</td>
+                                <td class="border border-gray-300 px-2 py-1 text-center">${valA}</td>
                             </tr>
                         `;
+                    } else {
+                        let groupedAssignments = [];
+                        let currentShareGroup = null;
+
+                        validAssignments.forEach(assign => {
+                            const stf = staffData.find(s => s.id == assign.staffId);
+                            const name = stf ? stf.name : t('txt_not_found');
+                            const shareVal = parseInt(assign.share) || 1;
+                            const secVal = parseInt(assign.sections) || 1;
+
+                            if (shareVal > 1) {
+                                if (currentShareGroup && currentShareGroup.names.length < currentShareGroup.expectedShare) {
+                                    currentShareGroup.names.push(name);
+                                    if (currentShareGroup.names.length === currentShareGroup.expectedShare) currentShareGroup = null; 
+                                } else {
+                                    let newGroup = { names: [name], sections: secVal, expectedShare: shareVal };
+                                    groupedAssignments.push(newGroup);
+                                    currentShareGroup = newGroup;
+                                }
+                            } else {
+                                groupedAssignments.push({ names: [name], sections: secVal, expectedShare: 1 });
+                            }
+                        });
+
+                        let currentSecStart = 1;
+                        let processedList = groupedAssignments.map(group => {
+                            let secCount = group.sections;
+                            let secStr = secCount === 1 ? `${currentSecStart}` : `${currentSecStart} - ${currentSecStart + secCount - 1}`;
+                            currentSecStart += secCount;
+                            let nameStr = group.names.join(`<br><span class='text-xs text-blue-600 print:text-gray-500 font-bold italic my-1 inline-block'><i class='fas fa-link'></i> ${t('txt_shared_with')}</span><br>`);
+                            return { name: nameStr, secStr: secStr };
+                        });
+
+                        if (processedList.length > 0) {
+                            let penyelaras = groupedAssignments[0].names[0]; 
+
+                            let rowsHtml = `
+                                <tr>
+                                    <td class="border border-gray-300 px-2 py-1 text-center" rowspan="${processedList.length}">${mainIndex++}</td>
+                                    <td class="border border-gray-300 px-2 py-1 font-semibold text-center" rowspan="${processedList.length}">${safeCode}</td>
+                                    <td class="border border-gray-300 px-3 py-1 font-semibold" rowspan="${processedList.length}">${safeName}</td>
+                                    <td class="border border-gray-300 px-2 py-1 text-center" rowspan="${processedList.length}">JKM (S)</td>
+                                    <td class="border border-gray-300 px-2 py-1 text-center">${processedList[0].secStr}</td>
+                                    <td class="border border-gray-300 px-3 py-1">${processedList[0].name}</td>
+                                    <td class="border border-gray-300 px-3 py-1" rowspan="${processedList.length}">${penyelaras}</td>
+                                    <td class="border border-gray-300 px-2 py-1 text-center" rowspan="${processedList.length}">${valK}</td>
+                                    <td class="border border-gray-300 px-2 py-1 text-center" rowspan="${processedList.length}">${valT}</td>
+                                    <td class="border border-gray-300 px-2 py-1 text-center" rowspan="${processedList.length}">${valA}</td>
+                                </tr>
+                            `;
+                            for(let i = 1; i < processedList.length; i++) {
+                                rowsHtml += `<tr><td class="border border-gray-300 px-2 py-1 text-center">${processedList[i].secStr}</td><td class="border border-gray-300 px-3 py-1">${processedList[i].name}</td></tr>`;
+                            }
+                            tbody.innerHTML += rowsHtml;
+                        }
                     }
-                    tbody.innerHTML += rowsHtml;
+                } catch (e) {
+                    console.error("Ralat memproses subjek untuk cetakan:", sub, e);
                 }
             });
         }
 
-        // ------------------ TAB 5: LAPORAN CETAKAN PENSYARAH ------------------
-        function populateStaffReportFilters() {
+        // ------------------ TAB 5: LAPORAN PENSYARAH ------------------
+        function renderStaffReportTab() {
             const filter = document.getElementById('staffReportFilter');
             const currentVal = filter.value;
-            filter.innerHTML = `<option value="ALL">-- Tunjuk Semua Pensyarah --</option>`;
+            filter.innerHTML = `<option value="ALL">${t('txt_all_staff')}</option>`;
             
-            // Susun nama mengikut abjad (Alphabetical order) untuk mudah dicari
             const sortedStaff = [...staffData].sort((a, b) => a.name.localeCompare(b.name));
-            
             sortedStaff.forEach(stf => {
-                let statusLabel = stf.status === 'Tidak Aktif' ? ' [Cuti/Tidak Aktif]' : '';
+                let statusLabel = stf.status === 'Tidak Aktif' ? ` [${t('txt_inactive')}]` : '';
                 filter.innerHTML += `<option value="${stf.id}">${stf.name}${statusLabel}</option>`;
             });
             if(currentVal && currentVal !== "") filter.value = currentVal;
-        }
 
-        function renderStaffReportTab() {
-            populateStaffReportFilters();
             const tbody = document.getElementById('printStaffListBody');
-            const filterVal = document.getElementById('staffReportFilter').value;
+            const filterVal = filter.value;
             tbody.innerHTML = '';
 
-            let dataToPrint = staffData;
-            if (filterVal !== "ALL") {
-                dataToPrint = staffData.filter(s => s.id === parseInt(filterVal));
-            }
-
+            let dataToPrint = filterVal !== "ALL" ? staffData.filter(s => s.id === parseInt(filterVal)) : staffData;
             let mainIndex = 1;
 
-            // Mengumpulkan senarai subjek bagi setiap pensyarah
             dataToPrint.forEach(staff => {
                 let staffAssignments = [];
-                
                 subjectsData.forEach(sub => {
                     sub.assigned.forEach(a => {
                         if (a.staffId === staff.id && a.sections > 0) {
                             const multiplier = getLoadMultiplier(sub.code, sub.type, sub.name);
-                            const pts = (multiplier * a.sections) / Math.max(1, a.share);
-                            staffAssignments.push({
-                                code: sub.code,
-                                name: sub.name,
-                                sections: a.sections,
-                                share: a.share,
-                                pts: pts
-                            });
+                            staffAssignments.push({ code: sub.code, name: sub.name, sections: a.sections, share: a.share, pts: (multiplier * a.sections) / Math.max(1, a.share) });
                         }
                     });
                 });
 
-                let totalLoad = staffAssignments.reduce((sum, item) => sum + item.pts, 0);
-                totalLoad = Number(totalLoad.toFixed(1));
-                
-                let loadClass = "font-bold text-lg ";
-                if(totalLoad > 20) loadClass += "text-red-600 print:text-gray-900";
-                else if(totalLoad > 0) loadClass += "text-blue-700 print:text-gray-900";
-                else loadClass += "text-gray-400 print:text-gray-500";
-                
+                let totalLoad = Number(staffAssignments.reduce((sum, item) => sum + item.pts, 0).toFixed(1));
+                let loadClass = `font-bold text-lg ${totalLoad > 20 ? 'text-red-600 print:text-gray-900' : (totalLoad > 0 ? 'text-blue-700 print:text-gray-900' : 'text-gray-400 print:text-gray-500')}`;
                 let inactiveStrikethrough = staff.status === 'Tidak Aktif' ? 'line-through text-gray-400' : 'text-gray-900';
-
                 let rowCount = Math.max(1, staffAssignments.length);
 
                 if (staffAssignments.length === 0) {
-                    // Jika tiada subjek diagihkan kepada pensyarah ini
-                    let emptyMsg = staff.status === 'Tidak Aktif' ? 'TIDAK AKTIF / CUTI' : 'BELUM ADA AGIHAN SUBJEK';
+                    let emptyMsg = staff.status === 'Tidak Aktif' ? t('txt_inactive').toUpperCase() : t('txt_unassigned');
                     tbody.innerHTML += `
                         <tr>
                             <td class="border border-gray-300 px-2 py-2 text-center align-top bg-gray-50">${mainIndex++}</td>
@@ -1202,9 +1150,7 @@
                         </tr>
                     `;
                 } else {
-                    // Menjana baris pertama dengan rowspan
-                    let secStr1 = staffAssignments[0].sections + (staffAssignments[0].share > 1 ? ` <span class="text-xs text-gray-500 font-bold block">(Kongsi ${staffAssignments[0].share})</span>` : '');
-                    
+                    let secStr1 = staffAssignments[0].sections + (staffAssignments[0].share > 1 ? ` <span class="text-xs text-gray-500 font-bold block">(${t('txt_share')} ${staffAssignments[0].share})</span>` : '');
                     let rowsHtml = `
                         <tr>
                             <td class="border border-gray-300 px-2 py-2 text-center align-top" rowspan="${rowCount}">${mainIndex++}</td>
@@ -1217,28 +1163,87 @@
                             <td class="border border-gray-300 px-2 py-2 text-center ${loadClass} align-middle" rowspan="${rowCount}">${totalLoad}</td>
                         </tr>
                     `;
-
-                    // Menjana baris seterusnya bagi pensyarah yang sama (menggunakan rowspan)
                     for(let i = 1; i < staffAssignments.length; i++) {
-                        let secStr = staffAssignments[i].sections + (staffAssignments[i].share > 1 ? ` <span class="text-xs text-gray-500 font-bold block">(Kongsi ${staffAssignments[i].share})</span>` : '');
-                        rowsHtml += `
-                            <tr>
-                                <td class="border border-gray-300 px-2 py-2 text-center font-bold text-blue-700 print:text-gray-900">${staffAssignments[i].code}</td>
-                                <td class="border border-gray-300 px-3 py-2 font-medium">${staffAssignments[i].name}</td>
-                                <td class="border border-gray-300 px-2 py-2 text-center">${secStr}</td>
-                                <td class="border border-gray-300 px-2 py-2 text-center font-semibold text-gray-600">${staffAssignments[i].pts.toFixed(1)}</td>
-                            </tr>
-                        `;
+                        let secStr = staffAssignments[i].sections + (staffAssignments[i].share > 1 ? ` <span class="text-xs text-gray-500 font-bold block">(${t('txt_share')} ${staffAssignments[i].share})</span>` : '');
+                        rowsHtml += `<tr><td class="border border-gray-300 px-2 py-2 text-center font-bold text-blue-700 print:text-gray-900">${staffAssignments[i].code}</td><td class="border border-gray-300 px-3 py-2 font-medium">${staffAssignments[i].name}</td><td class="border border-gray-300 px-2 py-2 text-center">${secStr}</td><td class="border border-gray-300 px-2 py-2 text-center font-semibold text-gray-600">${staffAssignments[i].pts.toFixed(1)}</td></tr>`;
                     }
                     tbody.innerHTML += rowsHtml;
                 }
             });
         }
+    </script>
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Initialize everything on load
-        renderSubjectsTab();
-        renderStaffListTab();
-        
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'jkm-schedule-master';
+        const firebaseConfigStr = typeof __firebase_config !== 'undefined' ? __firebase_config : null;
+
+        if (firebaseConfigStr) {
+            try {
+                const firebaseConfig = JSON.parse(firebaseConfigStr);
+                const app = initializeApp(firebaseConfig);
+                const auth = getAuth(app);
+                const db = getFirestore(app);
+
+                let isSyncing = false;
+                window.isCloudSyncActive = false;
+
+                async function initCloud() {
+                    try {
+                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) { await signInWithCustomToken(auth, __initial_auth_token); } 
+                        else { await signInAnonymously(auth); }
+                        
+                        const user = auth.currentUser;
+                        if (!user) return;
+
+                        window.isCloudSyncActive = true;
+                        
+                        const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'jkm_cloud', 'main_schedule');
+                        const statusBadge = document.getElementById('cloudStatusBadge');
+                        if(statusBadge) {
+                            statusBadge.innerHTML = `<i class="fas fa-cloud text-green-300 mr-1"></i> <span data-i18n="cloud_online">${t('cloud_online')}</span>`;
+                            statusBadge.classList.replace('bg-blue-900', 'bg-green-800');
+                            statusBadge.classList.replace('border-blue-700', 'border-green-600');
+                        }
+
+                        onSnapshot(docRef, (docSnap) => {
+                            if (docSnap.exists() && !isSyncing) {
+                                const data = docSnap.data();
+                                if (data.subjects && data.staff) {
+                                    window.setAppData(JSON.parse(data.subjects), JSON.parse(data.staff));
+                                    window.showToastMessage(t('msg_sync_title'), t('msg_sync_desc'), "fa-sync-alt");
+                                }
+                            }
+                        }, (error) => {
+                            if(statusBadge) statusBadge.innerHTML = `<i class="fas fa-cloud-meatball text-red-300 mr-1"></i> <span data-i18n="cloud_offline">${t('cloud_offline')}</span>`;
+                        });
+
+                        const originalSaveData = window.saveData;
+                        window.triggerCloudUpload = async function() {
+                            isSyncing = true;
+                            try {
+                                await setDoc(docRef, { subjects: JSON.stringify(window.getAppSubjects()), staff: JSON.stringify(window.getAppStaff()), updatedAt: new Date().toISOString(), updatedBy: user.uid });
+                                window.showToastMessage(t('msg_cloud_save'), t('msg_cloud_save_desc'), "fa-cloud-upload-alt");
+                            } catch (e) { window.showToastMessage(t('msg_offline'), t('msg_offline_desc'), "fa-save"); } 
+                            finally { setTimeout(() => { isSyncing = false; }, 1200); }
+                        };
+
+                        window.saveData = function() { originalSaveData(); window.triggerCloudUpload(); };
+
+                        const initialSnap = await getDoc(docRef);
+                        if(initialSnap.exists()) {
+                            const data = initialSnap.data();
+                            window.setAppData(JSON.parse(data.subjects), JSON.parse(data.staff));
+                            window.showToastMessage(t('msg_cloud_conn'), t('msg_cloud_conn_desc'), "fa-satellite-dish");
+                        } else { window.saveData(); }
+                    } catch(e) {}
+                }
+                initCloud();
+            } catch (e) {}
+        }
     </script>
 </body>
 </html>
