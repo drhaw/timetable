@@ -67,6 +67,9 @@
                 <button onclick="switchTab('tab-cetakan')" id="btn-tab-cetakan" class="tab-btn border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center">
                     <i class="fas fa-print mr-2"></i> 4. Laporan Cetakan
                 </button>
+                <button onclick="switchTab('tab-laporan-staf')" id="btn-tab-laporan-staf" class="tab-btn border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center">
+                    <i class="fas fa-user-tie mr-2"></i> 5. Laporan Pensyarah
+                </button>
             </nav>
         </div>
     </div>
@@ -159,7 +162,7 @@
                             <th scope="col" class="px-4 py-3 text-center text-xs font-bold text-gray-600 uppercase tracking-wider w-28">Status</th>
                             <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider w-40">Jawatan Luar/Dalam Fakulti</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Sejarah Pengajaran (Pernah Ajar)</th>
-                            <th scope="col" class="px-4 py-3 text-center text-xs font-bold text-gray-600 uppercase tracking-wider w-24">Beban Mata Semasa</th>
+                            <th scope="col" class="px-4 py-3 text-center text-xs font-bold text-gray-600 uppercase tracking-wider min-w-[220px]">Pecahan Beban Mata Semasa</th>
                             <th scope="col" class="px-4 py-3 text-center text-xs font-bold text-gray-600 uppercase tracking-wider w-24 no-print admin-col hidden">Tindakan</th>
                         </tr>
                     </thead>
@@ -207,6 +210,47 @@
                         </tr>
                     </thead>
                     <tbody id="printListBody">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 5: LAPORAN CETAKAN PENSYARAH (INDIVIDU)-->
+        <!-- ========================================== -->
+        <div id="tab-laporan-staf" class="tab-content hidden">
+            <div class="mb-6 flex flex-col md:flex-row md:justify-between md:items-center gap-4 no-print">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900">Laporan Agihan Tugas Mengikut Individu (Pensyarah)</h2>
+                    <p class="text-sm text-gray-500">Paparan auto-jana beban pengajaran untuk cetakan staf perseorangan atau keseluruhan jabatan.</p>
+                </div>
+                <div class="flex gap-3 items-center">
+                    <select id="staffReportFilter" onchange="renderStaffReportTab()" class="border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500">
+                        <option value="ALL">-- Tunjuk Semua Pensyarah --</option>
+                        <!-- Populated by JS -->
+                    </select>
+                    <button onclick="window.print()" class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white shadow-sm text-sm font-medium rounded-lg">
+                        <i class="fas fa-print mr-2"></i> Simpan PDF / Cetak Laporan Staf
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-white p-2 sm:p-6 shadow-sm border border-gray-200 print:border-none print:shadow-none">
+                <table class="min-w-full print-table text-sm border-collapse border border-gray-300">
+                    <thead class="bg-gray-100 print:bg-gray-200">
+                        <tr>
+                            <th class="border border-gray-300 px-2 py-2 font-bold text-center w-10">Bil</th>
+                            <th class="border border-gray-300 px-2 py-2 font-bold text-center w-24">No. Staf</th>
+                            <th class="border border-gray-300 px-3 py-2 font-bold text-left w-64">Nama Pensyarah</th>
+                            <th class="border border-gray-300 px-2 py-2 font-bold text-center w-28">Kod Kursus</th>
+                            <th class="border border-gray-300 px-3 py-2 font-bold text-left">Kursus / Subjek</th>
+                            <th class="border border-gray-300 px-2 py-2 font-bold text-center w-20" title="Bilangan Seksyen & Jika Berkongsi">Seksyen</th>
+                            <th class="border border-gray-300 px-2 py-2 font-bold text-center w-20">Mata Subjek</th>
+                            <th class="border border-gray-300 px-2 py-2 font-bold text-center w-28">Jumlah Keseluruhan</th>
+                        </tr>
+                    </thead>
+                    <tbody id="printStaffListBody">
                         <!-- Populated by JS -->
                     </tbody>
                 </table>
@@ -450,6 +494,7 @@
             if(tabId === 'tab-subjek') renderSubjectsTab();
             if(tabId === 'tab-agihan') renderAssignmentTab();
             if(tabId === 'tab-cetakan') renderPrintView();
+            if(tabId === 'tab-laporan-staf') renderStaffReportTab();
         }
 
         // ------------------ TAB 1: SENARAI SUBJEK (SUBJECTS) ------------------
@@ -631,7 +676,10 @@
             
             subjectsData.forEach((sub, sIndex) => {
                 let currentAssigned = 0;
-                sub.assigned.forEach(a => currentAssigned += a.sections);
+                sub.assigned.forEach(a => {
+                    currentAssigned += (a.sections / Math.max(1, a.share));
+                });
+                currentAssigned = Math.ceil(currentAssigned);
                 
                 let targetStatusHtml = "";
                 let cardBorder = "border-gray-200";
@@ -818,6 +866,28 @@
             staffData.forEach((staff, index) => {
                 const totalLoad = calculateStaffLoad(staff.id);
                 
+                // --- KIRAAN PECAHAN BEBAN (BREAKDOWN) ---
+                let breakdownHtml = '';
+                subjectsData.forEach(sub => {
+                    sub.assigned.forEach(a => {
+                        if (a.staffId === staff.id && a.sections > 0) {
+                            const multiplier = getLoadMultiplier(sub.code, sub.type);
+                            const pts = (multiplier * a.sections) / Math.max(1, a.share);
+                            let shareText = a.share > 1 ? ` (Kongsi ${a.share})` : '';
+                            breakdownHtml += `
+                                <div class="text-xs text-gray-700 mt-1.5 text-left bg-gray-50 p-1.5 rounded border border-gray-200 shadow-sm">
+                                    <span class="font-bold text-blue-700">${sub.code}</span><br>
+                                    ${a.sections} Seksyen${shareText} = <span class="font-bold text-gray-900">${pts.toFixed(1)} mata</span>
+                                </div>
+                            `;
+                        }
+                    });
+                });
+                
+                if (breakdownHtml === '') {
+                    breakdownHtml = `<div class="text-xs text-gray-400 mt-2 italic text-center">Belum ada agihan tugas</div>`;
+                }
+                
                 let badgeClass = 'bg-green-100 text-green-800 border-green-200';
                 if (totalLoad >= 30) badgeClass = 'bg-red-100 text-red-800 border-red-200'; 
                 else if (totalLoad >= 20) badgeClass = 'bg-orange-100 text-orange-800 border-orange-200'; 
@@ -841,10 +911,15 @@
                         <td class="px-4 py-4 whitespace-nowrap text-center">${statusBadge}</td>
                         <td class="px-4 py-4 whitespace-normal text-sm">${jawatanHtml}</td>
                         <td class="px-6 py-4 text-sm text-gray-600 max-w-sm truncate" title="${staff.history}">${staff.history}</td>
-                        <td class="px-4 py-4 whitespace-nowrap text-center">
-                            <span class="px-3 py-1 inline-flex text-sm leading-5 font-bold rounded-full border ${badgeClass}">
-                                ${totalLoad} Mata
-                            </span>
+                        <td class="px-4 py-4 whitespace-normal align-top">
+                            <div class="flex flex-col items-center">
+                                <span class="px-3 py-1 inline-flex text-sm leading-5 font-bold rounded-full border ${badgeClass} mb-1 shadow-sm">
+                                    Jumlah: ${totalLoad} Mata
+                                </span>
+                                <div class="w-full min-w-[180px]">
+                                    ${breakdownHtml}
+                                </div>
+                            </div>
                         </td>
                         <td class="px-4 py-4 whitespace-nowrap text-center admin-col ${isAdminMode ? '' : 'hidden'}">
                             <button onclick="openStaffModal(${staff.id})" class="text-blue-600 hover:text-blue-900 mx-1" title="Edit"><i class="fas fa-edit"></i></button>
@@ -910,24 +985,47 @@
                         </tr>
                     `;
                 } else {
-                    // Map staff IDs to Names and calculate Sec strings
-                    let currentSecStart = 1;
-                    let processedList = validAssignments.map(assign => {
-                        const stf = staffData.find(s => s.id === assign.staffId);
-                        let name = stf ? stf.name : "STAF TIDAK JUMPA";
-                        
-                        let secStr = "-";
-                        if (assign.sections === 1) {
-                            secStr = `${currentSecStart}`;
-                        } else if (assign.sections > 1) {
-                            secStr = `${currentSecStart} - ${currentSecStart + assign.sections - 1}`;
-                        }
-                        currentSecStart += assign.sections;
+                    // Kumpulan nama bagi pensyarah yang berkongsi seksyen
+                    let groupedAssignments = [];
+                    let currentShareGroup = null;
 
-                        return { name: name, secStr: secStr };
+                    validAssignments.forEach(assign => {
+                        const stf = staffData.find(s => s.id === assign.staffId);
+                        const name = stf ? stf.name : "STAF TIDAK JUMPA";
+
+                        if (assign.share > 1) {
+                            if (currentShareGroup && currentShareGroup.names.length < currentShareGroup.expectedShare) {
+                                currentShareGroup.names.push(name);
+                                if (currentShareGroup.names.length === currentShareGroup.expectedShare) {
+                                    currentShareGroup = null; 
+                                }
+                            } else {
+                                let newGroup = { names: [name], sections: assign.sections, expectedShare: assign.share };
+                                groupedAssignments.push(newGroup);
+                                currentShareGroup = newGroup;
+                            }
+                        } else {
+                            groupedAssignments.push({ names: [name], sections: assign.sections, expectedShare: 1 });
+                        }
                     });
 
-                    let penyelaras = processedList[0].name; // Assume first person is Penyelaras
+                    let currentSecStart = 1;
+                    let processedList = groupedAssignments.map(group => {
+                        let secStr = "-";
+                        if (group.sections === 1) {
+                            secStr = `${currentSecStart}`;
+                        } else if (group.sections > 1) {
+                            secStr = `${currentSecStart} - ${currentSecStart + group.sections - 1}`;
+                        }
+                        currentSecStart += group.sections;
+
+                        // Jika kongsi, gabungkan nama dengan label yang cantik
+                        let nameStr = group.names.join("<br><span class='text-xs text-blue-600 print:text-gray-500 font-bold italic my-1 inline-block'><i class='fas fa-link'></i> Berkongsi dengan:</span><br>");
+
+                        return { name: nameStr, secStr: secStr };
+                    });
+
+                    let penyelaras = groupedAssignments[0].names[0]; // Penyelaras = Orang pertama dalam kumpulan pertama
 
                     // Render First Row with Rowspan for Subject Info
                     let rowsHtml = `
@@ -951,6 +1049,116 @@
                             <tr>
                                 <td class="border border-gray-300 px-2 py-1 text-center">${processedList[i].secStr}</td>
                                 <td class="border border-gray-300 px-3 py-1">${processedList[i].name}</td>
+                            </tr>
+                        `;
+                    }
+                    tbody.innerHTML += rowsHtml;
+                }
+            });
+        }
+
+        // ------------------ TAB 5: LAPORAN CETAKAN PENSYARAH ------------------
+        function populateStaffReportFilters() {
+            const filter = document.getElementById('staffReportFilter');
+            const currentVal = filter.value;
+            filter.innerHTML = `<option value="ALL">-- Tunjuk Semua Pensyarah --</option>`;
+            
+            // Susun nama mengikut abjad (Alphabetical order) untuk mudah dicari
+            const sortedStaff = [...staffData].sort((a, b) => a.name.localeCompare(b.name));
+            
+            sortedStaff.forEach(stf => {
+                let statusLabel = stf.status === 'Tidak Aktif' ? ' [Cuti/Tidak Aktif]' : '';
+                filter.innerHTML += `<option value="${stf.id}">${stf.name}${statusLabel}</option>`;
+            });
+            if(currentVal && currentVal !== "") filter.value = currentVal;
+        }
+
+        function renderStaffReportTab() {
+            populateStaffReportFilters();
+            const tbody = document.getElementById('printStaffListBody');
+            const filterVal = document.getElementById('staffReportFilter').value;
+            tbody.innerHTML = '';
+
+            let dataToPrint = staffData;
+            if (filterVal !== "ALL") {
+                dataToPrint = staffData.filter(s => s.id === parseInt(filterVal));
+            }
+
+            let mainIndex = 1;
+
+            // Mengumpulkan senarai subjek bagi setiap pensyarah
+            dataToPrint.forEach(staff => {
+                let staffAssignments = [];
+                
+                subjectsData.forEach(sub => {
+                    sub.assigned.forEach(a => {
+                        if (a.staffId === staff.id && a.sections > 0) {
+                            const multiplier = getLoadMultiplier(sub.code, sub.type);
+                            const pts = (multiplier * a.sections) / Math.max(1, a.share);
+                            staffAssignments.push({
+                                code: sub.code,
+                                name: sub.name,
+                                sections: a.sections,
+                                share: a.share,
+                                pts: pts
+                            });
+                        }
+                    });
+                });
+
+                let totalLoad = staffAssignments.reduce((sum, item) => sum + item.pts, 0);
+                totalLoad = Number(totalLoad.toFixed(1));
+                
+                let loadClass = "font-bold text-lg ";
+                if(totalLoad > 20) loadClass += "text-red-600 print:text-gray-900";
+                else if(totalLoad > 0) loadClass += "text-blue-700 print:text-gray-900";
+                else loadClass += "text-gray-400 print:text-gray-500";
+                
+                let inactiveStrikethrough = staff.status === 'Tidak Aktif' ? 'line-through text-gray-400' : 'text-gray-900';
+
+                let rowCount = Math.max(1, staffAssignments.length);
+
+                if (staffAssignments.length === 0) {
+                    // Jika tiada subjek diagihkan kepada pensyarah ini
+                    let emptyMsg = staff.status === 'Tidak Aktif' ? 'TIDAK AKTIF / CUTI' : 'BELUM ADA AGIHAN SUBJEK';
+                    tbody.innerHTML += `
+                        <tr>
+                            <td class="border border-gray-300 px-2 py-2 text-center align-top bg-gray-50">${mainIndex++}</td>
+                            <td class="border border-gray-300 px-2 py-2 text-center align-top bg-gray-50">${staff.noStaf || '-'}</td>
+                            <td class="border border-gray-300 px-3 py-2 font-semibold align-top bg-gray-50 ${inactiveStrikethrough}">${staff.name}</td>
+                            <td class="border border-gray-300 px-2 py-2 text-center text-gray-400 italic bg-gray-50">-</td>
+                            <td class="border border-gray-300 px-3 py-2 text-red-500 italic font-medium bg-gray-50 print:text-gray-600">${emptyMsg}</td>
+                            <td class="border border-gray-300 px-2 py-2 text-center bg-gray-50">-</td>
+                            <td class="border border-gray-300 px-2 py-2 text-center bg-gray-50">-</td>
+                            <td class="border border-gray-300 px-2 py-2 text-center ${loadClass} bg-gray-50">${totalLoad}</td>
+                        </tr>
+                    `;
+                } else {
+                    // Menjana baris pertama dengan rowspan
+                    let secStr1 = staffAssignments[0].sections + (staffAssignments[0].share > 1 ? ` <span class="text-xs text-gray-500 font-bold block">(Kongsi ${staffAssignments[0].share})</span>` : '');
+                    
+                    let rowsHtml = `
+                        <tr>
+                            <td class="border border-gray-300 px-2 py-2 text-center align-top" rowspan="${rowCount}">${mainIndex++}</td>
+                            <td class="border border-gray-300 px-2 py-2 text-center align-top" rowspan="${rowCount}">${staff.noStaf || '-'}</td>
+                            <td class="border border-gray-300 px-3 py-2 font-semibold align-top ${inactiveStrikethrough}" rowspan="${rowCount}">${staff.name}</td>
+                            <td class="border border-gray-300 px-2 py-2 text-center font-bold text-blue-700 print:text-gray-900">${staffAssignments[0].code}</td>
+                            <td class="border border-gray-300 px-3 py-2 font-medium">${staffAssignments[0].name}</td>
+                            <td class="border border-gray-300 px-2 py-2 text-center">${secStr1}</td>
+                            <td class="border border-gray-300 px-2 py-2 text-center font-semibold text-gray-600">${staffAssignments[0].pts.toFixed(1)}</td>
+                            <td class="border border-gray-300 px-2 py-2 text-center ${loadClass} align-middle" rowspan="${rowCount}">${totalLoad}</td>
+                        </tr>
+                    `;
+
+                    // Menjana baris seterusnya bagi pensyarah yang sama (menggunakan rowspan)
+                    for(let i = 1; i < staffAssignments.length; i++) {
+                        let secStr = staffAssignments[i].sections + (staffAssignments[i].share > 1 ? ` <span class="text-xs text-gray-500 font-bold block">(Kongsi ${staffAssignments[i].share})</span>` : '');
+                        rowsHtml += `
+                            <tr>
+                                <td class="border border-gray-300 px-2 py-2 text-center font-bold text-blue-700 print:text-gray-900">${staffAssignments[i].code}</td>
+                                <td class="border border-gray-300 px-3 py-2 font-medium">${staffAssignments[i].name}</td>
+                                <td class="border border-gray-300 px-2 py-2 text-center">${secStr}</td>
+                                <td class="border border-gray-300 px-2 py-2 text-center font-semibold text-gray-600">${staffAssignments[i].pts.toFixed(1)}</td>
                             </tr>
                         `;
                     }
