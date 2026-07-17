@@ -364,34 +364,40 @@
         // DATA SUBJEK & STAF (DATABASE MOCK)
         // ==========================================
         const defaultSubjectsData = [
-            { id: 1, year: "Tahun 1", code: "BDA 10203", name: "Statics", type: "Teras", targetSec: 1, assigned: [] },
+            // Tahun 1
+            { id: 1, year: "Tahun 1", code: "BDA 10203", name: "Statics", type: "Teras", targetSec: 6, assigned: [] },
             { id: 2, year: "Tahun 1", code: "BDA 10903", name: "Solid Mechanics I", type: "Teras", targetSec: 8, assigned: [] },
             { id: 3, year: "Tahun 1", code: "BDA 17301", name: "Engineering Mechanics Laboratory I (New)", type: "Makmal", targetSec: 6, assigned: [] },
             
+            // Tahun 2
             { id: 4, year: "Tahun 2", code: "BDA 20103", name: "Dynamics", type: "Teras", targetSec: 6, assigned: [] },
             { id: 5, year: "Tahun 2", code: "BDA 20303", name: "Mechanics of Machine (KOD LAMA)", type: "Teras", targetSec: 1, assigned: [] },
             { id: 6, year: "Tahun 2", code: "BDA 21402", name: "Mechanics of Machine (NEW)", type: "Teras", targetSec: 4, assigned: [] },
             { id: 7, year: "Tahun 2", code: "BDA 21302", name: "Solid Mechanics II (NEW)", type: "Teras", targetSec: 8, assigned: [] },
             { id: 8, year: "Tahun 2", code: "BDA 20903", name: "Solid Mechanics II (KOD LAMA)", type: "Teras", targetSec: 1, assigned: [] },
             { id: 9, year: "Tahun 2", code: "BDA 21202", name: "Instrumentation", type: "Teras", targetSec: 8, assigned: [] },
-            { id: 10, year: "Tahun 2", code: "BDA 37401", name: "Engineering Mechanics Laboratory II", type: "Makmal", targetSec: 8, assigned: [] },
             
-            { id: 11, year: "Tahun 3", code: "BDA 31302", name: "Occupational Safety and Health", type: "Teras", targetSec: 2, assigned: [] },
-            { id: 12, year: "Tahun 3", code: "BDA 30703", name: "Control Engineering", type: "Teras", targetSec: 6, assigned: [] },
-            { id: 13, year: "Tahun 3", code: "BDA 34103", name: "Numerical Methods (KOD LAMA)", type: "Teras", targetSec: 1, assigned: [] },
-            { id: 14, year: "Tahun 3", code: "BDA 34202", name: "Numerical Methods (NEW)", type: "Teras", targetSec: 4, assigned: [] },
-            { id: 15, year: "Tahun 3", code: "BDA 31103", name: "Vibration", type: "Teras", targetSec: 8, assigned: [] },
+            // Tahun 3
+            { id: 10, year: "Tahun 3", code: "BDA 31302", name: "Occupational Safety and Health", type: "Teras", targetSec: 2, assigned: [] },
+            { id: 11, year: "Tahun 3", code: "BDA 30703", name: "Control Engineering", type: "Teras", targetSec: 6, assigned: [] },
+            { id: 12, year: "Tahun 3", code: "BDA 34103", name: "Numerical Methods (KOD LAMA)", type: "Teras", targetSec: 1, assigned: [] },
+            { id: 13, year: "Tahun 3", code: "BDA 34202", name: "Numerical Methods (NEW)", type: "Teras", targetSec: 4, assigned: [] },
+            { id: 14, year: "Tahun 3", code: "BDA 31103", name: "Vibration", type: "Teras", targetSec: 8, assigned: [] },
+            { id: 15, year: "Tahun 3", code: "BDA 37401", name: "Engineering Mechanics Laboratory II", type: "Makmal", targetSec: 8, assigned: [] },
             { id: 16, year: "Tahun 3", code: "BDA 37601", name: "Engineering Mechanics Laboratory III", type: "Makmal", targetSec: 6, assigned: [] },
             
-            { id: 17, year: "Tahun 4", code: "BDA 31003", name: "Finite Element Method", type: "Teras", targetSec: 6, assigned: [] },
+            // Tahun 4 (PECAHAN FEM KEPADA KULIAH & MAKMAL)
+            { id: 17, year: "Tahun 4", code: "BDA 31003", name: "Finite Element Method (KULIAH)", type: "Teras", targetSec: 6, assigned: [] },
+            { id: 18, year: "Tahun 4", code: "BDA 31003", name: "Finite Element Method (MAKMAL)", type: "Makmal", targetSec: 6, assigned: [] },
             
-            { id: 18, year: "Elektif", code: "BDC 41403", name: "Industrial Revolution 4.0 and Digital Transformation", type: "Elektif", targetSec: 2, assigned: [] },
-            { id: 19, year: "Elektif", code: "BDI 40203", name: "Modeling and Simulation/System Modelling and Simulation", type: "Elektif", targetSec: 2, assigned: [] },
-            { id: 20, year: "Elektif", code: "BDI 41103", name: "Solid Mechanics Simulation/Advanced Solid Mechanics", type: "Elektif", targetSec: 2, assigned: [] },
-            { id: 21, year: "Elektif", code: "BDC 40803", name: "Acoustics and Noise Control", type: "Elektif", targetSec: 2, assigned: [] },
-            { id: 22, year: "Elektif", code: "BDC 41003", name: "Data Science on Artificial Intelligence", type: "Elektif", targetSec: 2, assigned: [] },
-            { id: 23, year: "Elektif", code: "BDC 41203", name: "Applied Non Destructive Testing", type: "Elektif", targetSec: 2, assigned: [] },
-            { id: 24, year: "Elektif", code: "BDN 40403", name: "Automation and Control Eng. In Ship", type: "Elektif", targetSec: 2, assigned: [] }
+            // Elektif
+            { id: 19, year: "Elektif", code: "BDC 41403", name: "Industrial Revolution 4.0 and Digital Transformation", type: "Elektif", targetSec: 2, assigned: [] },
+            { id: 20, year: "Elektif", code: "BDI 40203", name: "Modeling and Simulation/System Modelling and Simulation", type: "Elektif", targetSec: 2, assigned: [] },
+            { id: 21, year: "Elektif", code: "BDI 41103", name: "Solid Mechanics Simulation/Advanced Solid Mechanics", type: "Elektif", targetSec: 2, assigned: [] },
+            { id: 22, year: "Elektif", code: "BDC 40803", name: "Acoustics and Noise Control", type: "Elektif", targetSec: 2, assigned: [] },
+            { id: 23, year: "Elektif", code: "BDC 41003", name: "Data Science on Artificial Intelligence", type: "Elektif", targetSec: 2, assigned: [] },
+            { id: 24, year: "Elektif", code: "BDC 41203", name: "Applied Non Destructive Testing", type: "Elektif", targetSec: 2, assigned: [] },
+            { id: 25, year: "Elektif", code: "BDN 40403", name: "Automation and Control Eng. In Ship", type: "Elektif", targetSec: 2, assigned: [] }
         ];
 
         const defaultStaffData = [
@@ -432,8 +438,8 @@
         let staffData = [];
 
         function initData() {
-            const savedSubjects = localStorage.getItem('jkm_subjects_v3');
-            const savedStaff = localStorage.getItem('jkm_staff_v3');
+            const savedSubjects = localStorage.getItem('jkm_subjects_v4');
+            const savedStaff = localStorage.getItem('jkm_staff_v4');
             
             if (savedSubjects) {
                 subjectsData = JSON.parse(savedSubjects);
@@ -450,15 +456,15 @@
 
         // Simpan Data ke Local Storage setiap kali berlaku perubahan
         function saveData() {
-            localStorage.setItem('jkm_subjects_v3', JSON.stringify(subjectsData));
-            localStorage.setItem('jkm_staff_v3', JSON.stringify(staffData));
+            localStorage.setItem('jkm_subjects_v4', JSON.stringify(subjectsData));
+            localStorage.setItem('jkm_staff_v4', JSON.stringify(staffData));
         }
 
         // Padam memori dan kembali kepada asal
         function resetData() {
             if(confirm("AWAS: Adakah anda pasti mahu RESET (padam) semua memori jadual yang telah diagihkan dan kembali kepada senarai kosong asal?")) {
-                localStorage.removeItem('jkm_subjects_v3');
-                localStorage.removeItem('jkm_staff_v3');
+                localStorage.removeItem('jkm_subjects_v4');
+                localStorage.removeItem('jkm_staff_v4');
                 location.reload();
             }
         }
@@ -619,7 +625,11 @@
         }
 
         // Pengiraan mata beban
-        function getLoadMultiplier(subjectCode, type) {
+        function getLoadMultiplier(subjectCode, type, subjectName = "") {
+            // Pengecualian Khas untuk FEM (Beban Mata Berasingan)
+            if (subjectName.includes("Finite Element Method (KULIAH)")) return 6;
+            if (subjectName.includes("Finite Element Method (MAKMAL)")) return 4;
+
             if (type === 'Makmal') return 2; // Makmal biasanya 2 mata per seksyen
             
             const match = subjectCode.match(/[A-Z]{3}\s*\d{4}(\d)/);
@@ -635,9 +645,12 @@
         function getStaffOptions(assignedStaffId, subjectName) {
             let options = `<option value="">-- Pilih Staf --</option>`;
             
+            // Normalize nama subjek supaya sistem kenal sejarah staf walaupun dipecahkan kepada Kuliah/Makmal
+            let baseSubjectName = subjectName.replace(" (KULIAH)", "").replace(" (MAKMAL)", "");
+            
             // 1. Prioritize staff who have history with this subject
-            const recommendedStaff = staffData.filter(s => s.status === 'Aktif' && s.history.includes(subjectName));
-            const otherActiveStaff = staffData.filter(s => s.status === 'Aktif' && !s.history.includes(subjectName));
+            const recommendedStaff = staffData.filter(s => s.status === 'Aktif' && s.history.includes(baseSubjectName));
+            const otherActiveStaff = staffData.filter(s => s.status === 'Aktif' && !s.history.includes(baseSubjectName));
             const inactiveStaff = staffData.filter(s => s.status !== 'Aktif');
 
             if (recommendedStaff.length > 0) {
@@ -851,7 +864,7 @@
             subjectsData.forEach(sub => {
                 sub.assigned.forEach(a => {
                     if (a.staffId === staffId) {
-                        const multiplier = getLoadMultiplier(sub.code, sub.type);
+                        const multiplier = getLoadMultiplier(sub.code, sub.type, sub.name);
                         totalLoad += (multiplier * a.sections) / Math.max(1, a.share);
                     }
                 });
@@ -871,7 +884,7 @@
                 subjectsData.forEach(sub => {
                     sub.assigned.forEach(a => {
                         if (a.staffId === staff.id && a.sections > 0) {
-                            const multiplier = getLoadMultiplier(sub.code, sub.type);
+                            const multiplier = getLoadMultiplier(sub.code, sub.type, sub.name);
                             const pts = (multiplier * a.sections) / Math.max(1, a.share);
                             let shareText = a.share > 1 ? ` (Kongsi ${a.share})` : '';
                             breakdownHtml += `
@@ -964,6 +977,10 @@
                 else if (lastDigitMatch === '2') { k=2; t=0; a=0; } // e.g. 21302 = 2k
                 else if (lastDigitMatch === '1') { k=0; t=0; a=2; } // Makmal
                 if(sub.type === 'Makmal') { k=0; t=0; a=2; } // Force makmal to a=2
+
+                // Override khas untuk Finite Element Method (Kuliah vs Makmal)
+                if (sub.name.includes("Finite Element Method (KULIAH)")) { k=2; t=0; a=0; }
+                if (sub.name.includes("Finite Element Method (MAKMAL)")) { k=0; t=0; a=2; }
 
                 let validAssignments = sub.assigned.filter(a => a.staffId !== "" && a.sections > 0);
                 
@@ -1092,7 +1109,7 @@
                 subjectsData.forEach(sub => {
                     sub.assigned.forEach(a => {
                         if (a.staffId === staff.id && a.sections > 0) {
-                            const multiplier = getLoadMultiplier(sub.code, sub.type);
+                            const multiplier = getLoadMultiplier(sub.code, sub.type, sub.name);
                             const pts = (multiplier * a.sections) / Math.max(1, a.share);
                             staffAssignments.push({
                                 code: sub.code,
